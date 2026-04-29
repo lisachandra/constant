@@ -1,0 +1,16 @@
+{
+  "WALK_SPEED": 16,
+  "DEBUG_RAYCASTS": false,
+  "THEME_COLOR": {
+    "type": "Color3",
+    "value": [1, 0, 0]
+  },
+  "_defaults": {
+    "WALK_SPEED": 16,
+    "DEBUG_RAYCASTS": false,
+    "THEME_COLOR": {
+      "type": "Color3",
+      "value": [1, 0, 0]
+    }
+  }
+}

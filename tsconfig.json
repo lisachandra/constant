@@ -1,0 +1,20 @@
+{
+	"extends": "@isentinel/tsconfig/roblox",
+	"compilerOptions": {
+		"composite": true,
+		"rootDir": ".",
+		"typeRoots": [
+			"${configDir}/node_modules/@rbxts",
+			"${configDir}/node_modules/@lisachandra",
+		],
+		"types": [
+			"../@rbxts/types",
+			"../@rbxts/services",
+			"../@rbxts/compiler-types",
+			"../@lisachandra/types",
+		],
+		"exactOptionalPropertyTypes": false,
+		"noPropertyAccessFromIndexSignature": false,
+		"declaration": true,
+	},
+}
