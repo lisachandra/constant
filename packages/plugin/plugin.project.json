@@ -1,7 +1,7 @@
 {
 	"name": "plugin",
 	"tree": {
-		"$path": "out",
+		"$className": "Folder",
 		"rbxts_include": {
 			"$className": "Folder",
 			"node_modules": {
@@ -10,7 +10,10 @@
 					"$path": "node_modules/@rbxts"
 				},
 				"@lisachandra": {
-					"$path": "node_modules/@lisachandra"
+					"$path": "node_modules/@lisachandra",
+					"plugin": {
+						"$path": "out"
+					}
 				}
 			}
 		}

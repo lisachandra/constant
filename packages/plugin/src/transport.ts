@@ -1,5 +1,5 @@
 import { ReplicatedStorage } from "@rbxts/services";
-import type { ConstantPluginUpdateRequest } from "./index";
+import type { ConstantPluginUpdateRequest } from ".";
 
 export const CONSTANT_TRANSPORT_FOLDER_NAME = "constant";
 export const CONSTANT_TRANSPORT_EVENT_NAME = "PersistRequested";

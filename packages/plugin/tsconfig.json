@@ -1,3 +1,11 @@
 {
-	"extends": "../../tsconfig.json"
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"types": [
+			"../@rbxts/types/plugin",
+			"../@rbxts/services/plugin",
+			"../@rbxts/compiler-types",
+			"../@lisachandra/types",
+		],
+	},
 }
