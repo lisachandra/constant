@@ -21,29 +21,24 @@ export function createConstantPluginPersistenceService(
 		snapshots.set(scope, initialSnapshots[scope] ?? {});
 	}
 
-	function getSnapshot(scope: ConstantScope): PersistedConstantFile {
-		return snapshots.get(scope) ?? {};
-	}
-
-	function receiveUpdate(request: ConstantPluginUpdateRequest): PersistedConstantFile {
-		const next = applyConstantUpdate(getSnapshot(request.scope), request);
-		snapshots.set(request.scope, next);
-		return next;
-	}
-
-	function flushScope(scope: ConstantScope): void {
-		writer.write(getConstantsFilePath(scope), getSnapshot(scope));
-	}
-
-	function flushAll(): void {
-		flushScope("client");
-		flushScope("server");
-	}
-
 	return {
-		receiveUpdate,
-		getSnapshot,
-		flushScope,
-		flushAll,
+		getSnapshot(scope: ConstantScope): PersistedConstantFile {
+			return snapshots.get(scope) ?? {};
+		},
+
+		receiveUpdate(request: ConstantPluginUpdateRequest): PersistedConstantFile {
+			const nextFile = applyConstantUpdate(this.getSnapshot(request.scope), request);
+			snapshots.set(request.scope, nextFile);
+			return nextFile;
+		},
+
+		flushScope(scope: ConstantScope): void {
+			writer.write(getConstantsFilePath(scope), this.getSnapshot(scope));
+		},
+
+		flushAll(): void {
+			this.flushScope("client");
+			this.flushScope("server");
+		},
 	};
 }

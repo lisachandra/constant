@@ -9,7 +9,7 @@ import {
 	serializedEquals,
 	type ConstantUpdatePayload,
 	type PersistedConstantFile,
-} from "../../../packages/constant/src";
+} from "@lisachandra/constant";
 
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 type ExpectType<T extends true> = T;

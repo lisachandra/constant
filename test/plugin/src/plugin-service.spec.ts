@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@rbxts/jest-globals";
-import { createConstantPluginPersistenceService } from "../../../packages/plugin/src/service";
+import { createConstantPluginPersistenceService } from "@lisachandra/plugin/out/service";
 
 describe("plugin persistence service", () => {
 	test("stores snapshots per scope", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@rbxts/jest-globals";
-import { createConstantPluginCoordinator } from "../../../packages/plugin/src/coordinator";
+import { createConstantPluginCoordinator } from "@lisachandra/plugin/out/coordinator";
 
 describe("plugin coordinator", () => {
 	test("receives transport payloads and flushes immediately when delay is zero", () => {

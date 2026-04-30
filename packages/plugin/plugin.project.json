@@ -3,11 +3,14 @@
 	"tree": {
 		"$path": "out",
 		"rbxts_include": {
-			"$path": "out/include",
+			"$className": "Folder",
 			"node_modules": {
 				"$className": "Folder",
 				"@rbxts": {
 					"$path": "node_modules/@rbxts"
+				},
+				"@lisachandra": {
+					"$path": "node_modules/@lisachandra"
 				}
 			}
 		}

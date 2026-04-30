@@ -81,7 +81,7 @@ importers:
         version: 1.2.0(typescript@5.5.3)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/compiler-types':
         specifier: 'catalog:'
         version: 3.0.0-types.0
@@ -114,7 +114,7 @@ importers:
         version: 1.2.0(typescript@5.9.3)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/compiler-types':
         specifier: 'catalog:'
         version: 3.0.0-types.0
@@ -141,7 +141,7 @@ importers:
         version: 1.2.0(typescript@5.9.3)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/compiler-types':
         specifier: 'catalog:'
         version: 3.0.0-types.0
@@ -165,10 +165,10 @@ importers:
         version: link:../../packages/constant
       '@lisachandra/core':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/jest':
         specifier: 'catalog:'
         version: 3.13.3-ts.1
@@ -211,13 +211,13 @@ importers:
         version: link:../../packages/constant
       '@lisachandra/core':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)
       '@lisachandra/plugin':
         specifier: workspace:*
         version: link:../../packages/plugin
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/jest':
         specifier: 'catalog:'
         version: 3.13.3-ts.1
@@ -368,8 +368,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lisachandra/core@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core':
-    resolution: {path: packages/core, tarball: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e}
+  '@lisachandra/core@https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/core':
+    resolution: {path: packages/core, tarball: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c}
     version: 0.1.0
     peerDependencies:
       '@flamework/core': '*'
@@ -389,8 +389,8 @@ packages:
       '@rbxts/validate-tree': '*'
       type-fest: '*'
 
-  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types':
-    resolution: {path: packages/types, tarball: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e}
+  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types':
+    resolution: {path: packages/types, tarball: https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c}
     version: 0.1.0
     peerDependencies:
       '@rbxts/compiler-types': '*'
@@ -2146,10 +2146,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lisachandra/core@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)':
+  '@lisachandra/core@https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)':
     dependencies:
       '@flamework/core': 1.3.2
-      '@lisachandra/types': https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
+      '@lisachandra/types': https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/centurion': 1.0.1
       '@rbxts/crate': 1.0.3-rc.1
       '@rbxts/lapis': 0.3.8(@rbxts/t@3.2.1)
@@ -2165,7 +2165,7 @@ snapshots:
       '@rbxts/validate-tree': 2.0.2
       type-fest: 5.6.0
 
-  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)':
+  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/86a4a95e09f9c2b89fd354c850983123f33f3a6c#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)':
     dependencies:
       '@rbxts/compiler-types': 3.0.0-types.0
       '@rbxts/matter': 0.8.5

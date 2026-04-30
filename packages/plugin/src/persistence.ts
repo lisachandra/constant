@@ -30,8 +30,8 @@ export function applyConstantUpdate(
 	current: PersistedConstantFile,
 	request: ConstantPluginUpdateRequest,
 ): PersistedConstantFile {
-	const next: PersistedConstantFile = { ...current, _defaults: { ...(current._defaults ?? {}) } };
-	next[request.name] = request.serializedValue as SerializedConstant;
-	next._defaults![request.name] = request.serializedDefault as SerializedConstant;
-	return next;
+	const nextFile: PersistedConstantFile = { ...current, _defaults: { ...(current._defaults ?? {}) } };
+	nextFile[request.name] = request.serializedValue as SerializedConstant;
+	nextFile._defaults![request.name] = request.serializedDefault as SerializedConstant;
+	return nextFile;
 }

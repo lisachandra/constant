@@ -31,6 +31,8 @@ export function publishConstantUpdate(
 
 export function createMemoryUpdateSink(onPublish: (payload: ConstantUpdatePayload) => void): ConstantUpdateSink {
 	return {
-		publish: onPublish,
+		publish(payload) {
+			return onPublish(payload)
+		},
 	};
 }

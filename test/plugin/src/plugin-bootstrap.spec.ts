@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@rbxts/jest-globals";
-import { createConstantPluginCoordinator } from "../../../packages/plugin/src/coordinator";
+import { createConstantPluginCoordinator } from "@lisachandra/plugin/out/coordinator";
 
 describe("plugin bootstrap shape", () => {
 	test("coordinator can be wrapped by a start/stop lifecycle", () => {

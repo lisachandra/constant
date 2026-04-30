@@ -6,7 +6,7 @@ import {
 	getConstantsFilePath,
 	getOrCreatePluginTransportEvent,
 	isConstantPluginUpdateRequest,
-} from "../../../packages/plugin/src";
+} from "@lisachandra/plugin";
 
 describe("plugin bridge", () => {
 	test("validates bridge payload shape", () => {
@@ -35,7 +35,7 @@ describe("plugin bridge", () => {
 	});
 
 	test("applies updates into flat persisted files", () => {
-		const next = applyConstantUpdate(
+		const nextFile = applyConstantUpdate(
 			{
 				DEBUG: false,
 				_defaults: { DEBUG: false },
@@ -48,9 +48,9 @@ describe("plugin bridge", () => {
 			},
 		);
 
-		expect(next.DEBUG).toBe(false);
-		expect(next.WALK_SPEED).toBe(24);
-		expect(next._defaults?.WALK_SPEED).toBe(16);
+		expect(nextFile.DEBUG).toBe(false);
+		expect(nextFile.WALK_SPEED).toBe(24);
+		expect(nextFile._defaults?.WALK_SPEED).toBe(16);
 	});
 
 	test("forwards valid requests", () => {

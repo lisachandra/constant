@@ -9,7 +9,7 @@ export default defineConfig({
 	outputFile: "jest-output.log",
 	placeFile: "test.rbxl",
 	rojoProject: "default.project.json",
-	setupFiles: ["@lisachandra/core/out/test/setup.luau"],
+	setupFiles: ["@lisachandra/core/out/test/setup"],
 	testTimeout: 5000,
 	timeout: 30000,
 });

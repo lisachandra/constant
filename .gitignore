@@ -13,6 +13,9 @@
 /cloud
 /assets
 asphalt.lock.toml
+*.rbxm
+*.rbxm.lock
+!places/*.rbxm
 *.rbxl
 *.rbxl.lock
 !places/*.rbxl
