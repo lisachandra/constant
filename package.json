@@ -15,7 +15,8 @@
 		"dev:packages": "pnpm --filter \"./packages/**\" dev",
 		"dev:test": "pnpm --filter \"./test/**\" dev",
 		"release": "pnpm -r publish --access=public && changeset tag",
-		"version": "changeset version"
+		"version": "changeset version",
+		"postinstall": "bash ./scripts/hoist.sh"
 	},
 	"devDependencies": {
 		"@lisachandra/types": "catalog:",
@@ -29,7 +30,8 @@
 		"husky": "catalog:",
 		"io-serve": "catalog:",
 		"shx": "catalog:",
-		"typescript": "catalog:"
+		"typescript": "catalog:",
+		"jiti": "catalog:"
 	},
 	"packageManager": "pnpm@10.33.0"
 }

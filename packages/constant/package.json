@@ -41,7 +41,8 @@
 		"shx": "catalog:"
 	},
 	"peerDependencies": {
-		"@rbxts/services": "*"
+		"@rbxts/services": "*",
+		"@rbxts/iris": "*"
 	},
 	"publishConfig": {
 		"access": "public"

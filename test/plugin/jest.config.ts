@@ -1,1 +1,1 @@
-export { default } from "./jest.shared";
+export { default } from "./jest.shared.ts";

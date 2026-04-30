@@ -9,14 +9,20 @@
 				"$path": "out"
 			},
 			"rbxts_include": {
-				"$path": "out/include",
+				"$className": "Folder",
 				"node_modules": {
 					"$className": "Folder",
-					"@rbxts": {
-						"$path": "node_modules/@rbxts",
+					"@lisachandra": {
+						"$path": "node_modules/@lisachandra",
 						"constant": {
 							"$path": "../../packages/constant/out"
 						}
+					},
+					"@rbxts": {
+						"$path": "node_modules/@rbxts"
+					},
+					"@rbxts-js": {
+						"$path": "node_modules/@rbxts-js"
 					}
 				}
 			}

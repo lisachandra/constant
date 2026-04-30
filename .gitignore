@@ -3,6 +3,9 @@
 
 *.env
 
+.diracrules
+.jest-roblox-coverage
+
 ### Roblox-TS ###
 
 # Assets

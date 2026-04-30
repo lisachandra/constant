@@ -1,0 +1,17 @@
+# Ignore directories
+node_modules/
+out/
+
+# Un-ignore specific files
+!**/node_modules/**/*.d.ts
+!**/node_modules/**/*.d.tsx
+!**/node_modules/**/*.luau
+!**/node_modules/**/*.ts
+!**/node_modules/**/*.tsx
+!**/node_modules/**/*.json
+!**/out/**/*.d.ts
+!**/out/**/*.d.tsx
+!**/out/**/*.luau
+!**/out/**/*.ts
+!**/out/**/*.tsx
+!**/out/**/*.json

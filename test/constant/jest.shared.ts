@@ -5,10 +5,10 @@ export default defineConfig({
 	projects: [
 		{
 			test: {
-				displayName: { name: "ui", color: "blue" },
-				include: ["**/*.spec.ts", "**/*.spec.tsx"],
+				displayName: { name: "constant", color: "blue" },
+				include: ["src/**/*.spec.ts", "src/**/*.spec.tsx"],
 				mockDataModel: true,
-				outDir: "out-test",
+				outDir: "out",
 			},
 		},
 	],

@@ -13,11 +13,14 @@ catalogs:
       specifier: 2.31.0
       version: 2.31.0
     '@isentinel/jest-roblox':
-      specifier: 0.2.5
-      version: 0.2.5
+      specifier: 0.2.7
+      version: 0.2.7
     '@isentinel/tsconfig':
       specifier: 1.2.0
       version: 1.2.0
+    '@lisachandra/core':
+      specifier: github:lisachandra/rbxts#path:packages/core
+      version: 0.1.0
     '@lisachandra/types':
       specifier: github:lisachandra/rbxts#path:packages/types
       version: 0.1.0
@@ -38,13 +41,16 @@ catalogs:
       version: 1.6.0
     '@rbxts/types':
       specifier: latest
-      version: 1.0.917
+      version: 1.0.918
     husky:
       specifier: 9.1.7
       version: 9.1.7
     io-serve:
       specifier: 1.1.2
       version: 1.1.2
+    jiti:
+      specifier: 2.6.1
+      version: 2.6.1
     roblox-ts:
       specifier: 3.0.0
       version: 3.0.0
@@ -69,25 +75,28 @@ importers:
         version: 2.31.0
       '@isentinel/jest-roblox':
         specifier: 'catalog:'
-        version: 0.2.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)
+        version: 0.2.7(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)(jiti@2.6.1)
       '@isentinel/tsconfig':
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.5.3)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.917)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/compiler-types':
         specifier: 'catalog:'
         version: 3.0.0-types.0
       '@rbxts/types':
         specifier: 'catalog:'
-        version: 1.0.917
+        version: 1.0.918
       husky:
         specifier: 'catalog:'
         version: 9.1.7
       io-serve:
         specifier: 'catalog:'
         version: 1.1.2
+      jiti:
+        specifier: 'catalog:'
+        version: 2.6.1
       roblox-ts:
         specifier: 'catalog:'
         version: 3.0.0
@@ -105,7 +114,7 @@ importers:
         version: 1.2.0(typescript@5.9.3)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.917)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/compiler-types':
         specifier: 'catalog:'
         version: 3.0.0-types.0
@@ -117,7 +126,7 @@ importers:
         version: 1.6.0
       '@rbxts/types':
         specifier: 'catalog:'
-        version: 1.0.917
+        version: 1.0.918
       roblox-ts:
         specifier: 'catalog:'
         version: 3.0.0
@@ -132,7 +141,7 @@ importers:
         version: 1.2.0(typescript@5.9.3)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.917)(type-fest@5.6.0)
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/compiler-types':
         specifier: 'catalog:'
         version: 3.0.0-types.0
@@ -141,7 +150,7 @@ importers:
         version: 1.6.0
       '@rbxts/types':
         specifier: 'catalog:'
-        version: 1.0.917
+        version: 1.0.918
       roblox-ts:
         specifier: 'catalog:'
         version: 3.0.0
@@ -150,22 +159,16 @@ importers:
         version: 0.4.0
 
   test/constant:
-    devDependencies:
-      '@isentinel/jest-roblox':
-        specifier: 'catalog:'
-        version: 0.2.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)
-      '@isentinel/tsconfig':
-        specifier: 'catalog:'
-        version: 1.2.0(typescript@5.5.3)
+    dependencies:
       '@lisachandra/constant':
         specifier: workspace:*
         version: link:../../packages/constant
+      '@lisachandra/core':
+        specifier: 'catalog:'
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.917)(type-fest@5.6.0)
-      '@rbxts/compiler-types':
-        specifier: 'catalog:'
-        version: 3.0.0-types.0
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/jest':
         specifier: 'catalog:'
         version: 3.13.3-ts.1
@@ -175,9 +178,19 @@ importers:
       '@rbxts/services':
         specifier: 'catalog:'
         version: 1.6.0
+    devDependencies:
+      '@isentinel/jest-roblox':
+        specifier: 'catalog:'
+        version: 0.2.7(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)(jiti@2.6.1)
+      '@isentinel/tsconfig':
+        specifier: 'catalog:'
+        version: 1.2.0(typescript@5.5.3)
+      '@rbxts/compiler-types':
+        specifier: 'catalog:'
+        version: 3.0.0-types.0
       '@rbxts/types':
         specifier: 'catalog:'
-        version: 1.0.917
+        version: 1.0.918
       io-serve:
         specifier: 'catalog:'
         version: 1.1.2
@@ -192,25 +205,19 @@ importers:
         version: 5.5.3
 
   test/plugin:
-    devDependencies:
-      '@isentinel/jest-roblox':
-        specifier: 'catalog:'
-        version: 0.2.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)
-      '@isentinel/tsconfig':
-        specifier: 'catalog:'
-        version: 1.2.0(typescript@5.5.3)
+    dependencies:
       '@lisachandra/constant':
         specifier: workspace:*
         version: link:../../packages/constant
+      '@lisachandra/core':
+        specifier: 'catalog:'
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)
       '@lisachandra/plugin':
         specifier: workspace:*
         version: link:../../packages/plugin
       '@lisachandra/types':
         specifier: 'catalog:'
-        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.917)(type-fest@5.6.0)
-      '@rbxts/compiler-types':
-        specifier: 'catalog:'
-        version: 3.0.0-types.0
+        version: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
       '@rbxts/jest':
         specifier: 'catalog:'
         version: 3.13.3-ts.1
@@ -220,9 +227,19 @@ importers:
       '@rbxts/services':
         specifier: 'catalog:'
         version: 1.6.0
+    devDependencies:
+      '@isentinel/jest-roblox':
+        specifier: 'catalog:'
+        version: 0.2.7(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)(jiti@2.6.1)
+      '@isentinel/tsconfig':
+        specifier: 'catalog:'
+        version: 1.2.0(typescript@5.5.3)
+      '@rbxts/compiler-types':
+        specifier: 'catalog:'
+        version: 3.0.0-types.0
       '@rbxts/types':
         specifier: 'catalog:'
-        version: 1.0.917
+        version: 1.0.918
       io-serve:
         specifier: 'catalog:'
         version: 1.1.2
@@ -318,6 +335,9 @@ packages:
   '@emnapi/wasi-threads@1.2.1':
     resolution: {integrity: sha512-uTII7OYF+/Mes/MrcIOYp5yOtSMLBWSIoLPpcgwipoiKbli6k322tcoFsxoIIxPDqW01SQGAgko4EzZi2BNv2w==}
 
+  '@flamework/core@1.3.2':
+    resolution: {integrity: sha512-4/tY5plivbvr4vvwRtxzuym7Nl5eDHM3RAR2nZHuuNz31h2S2CIrCoGHjkod0I6qPpfs4eUw2TiIrvVN8iC8JQ==}
+
   '@inquirer/external-editor@1.0.3':
     resolution: {integrity: sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA==}
     engines: {node: '>=18'}
@@ -327,8 +347,8 @@ packages:
       '@types/node':
         optional: true
 
-  '@isentinel/jest-roblox@0.2.5':
-    resolution: {integrity: sha512-ok/lMS2FXDNIP2h2UtKu5Xn4aPWeoqDlFVNgOVrKndqPmVgIDd9HKOje6lo7n3mdhBoatWqbXEg0095u+HThGg==}
+  '@isentinel/jest-roblox@0.2.7':
+    resolution: {integrity: sha512-epukhWr6PUaTrTnbov1mJIfktZCsRNA1dJ6Gc0pTNBx0a3+tt6m18S2Jyt5A/0Zh6gKwjOWfyuCkrCLHVQm/YA==}
     engines: {node: '>=24.10.0'}
     hasBin: true
 
@@ -348,8 +368,29 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91#path:packages/types':
-    resolution: {path: packages/types, tarball: https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91}
+  '@lisachandra/core@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core':
+    resolution: {path: packages/core, tarball: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e}
+    version: 0.1.0
+    peerDependencies:
+      '@flamework/core': '*'
+      '@lisachandra/types': '*'
+      '@rbxts/centurion': '*'
+      '@rbxts/crate': '*'
+      '@rbxts/lapis': '*'
+      '@rbxts/lemon-signal': '*'
+      '@rbxts/log': '*'
+      '@rbxts/luau-polyfill': '*'
+      '@rbxts/matter': '*'
+      '@rbxts/message-templates': '*'
+      '@rbxts/object-cache': '*'
+      '@rbxts/services': '*'
+      '@rbxts/sift': '*'
+      '@rbxts/t': '*'
+      '@rbxts/validate-tree': '*'
+      type-fest: '*'
+
+  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types':
+    resolution: {path: packages/types, tarball: https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e}
     version: 0.1.0
     peerDependencies:
       '@rbxts/compiler-types': '*'
@@ -667,8 +708,17 @@ packages:
   '@rbxts-js/timers@1.2.3-ts.1':
     resolution: {integrity: sha512-HKP4ymFX3QLWbR/2Gy4LXwvkhjC9OzbwZ5bNunxu+M8Ocbi1cjRduiZK/y5ogLr9cNIfSoxs6e1DQ3soc8/hwA==}
 
+  '@rbxts/beacon@2.1.1':
+    resolution: {integrity: sha512-QeFMSGj+Iijp+tHcV9eyqVyeKZ/9zp7GqRJ/hecKiHmoTu4yFcyGnUQAaX7OdQKBCgLvWMJ9wK/FXMECjFA2Kg==}
+
+  '@rbxts/centurion@1.0.1':
+    resolution: {integrity: sha512-RFkIvnivn43/jYCg0ue90fXg+aRlhFUUc8OmYP0UWpIPRxTF3PTHpMKp7EZMXoZl7J7XzUngcqYcL1senBnenQ==}
+
   '@rbxts/compiler-types@3.0.0-types.0':
     resolution: {integrity: sha512-VGOHJPoL7+56NTatMGqQj3K7xWuzEV+aP4QD5vZiHu+bcff3kiTmtoadaF6NkJrmwfFAvbsd4Dg764ZjWNceag==}
+
+  '@rbxts/crate@1.0.3-rc.1':
+    resolution: {integrity: sha512-A+s1Z/t9WWRedUoH52D1ewi7Jh0sZjeFNZkD1N0V2AAvg5K8X155rXbncz+1NP+kkkmUXq2FyayUlu3rbAg1IA==}
 
   '@rbxts/emittery@3.13.3-ts.1':
     resolution: {integrity: sha512-iEUg8fk1xYO70H5t+a1sO34FkYerP+melGdJYkUV0Jf6fzYms7YQ/5awVjJ7KYJW3vo1bKUODBiBymqz4LHxEA==}
@@ -685,8 +735,34 @@ packages:
   '@rbxts/jest@3.13.3-ts.1':
     resolution: {integrity: sha512-3Nd0PTYG+Dej1Gz0MSJlzirycbaahZtGFKXvFnu2pNZKqvti9QCzFVHsMZ2GYWAYG3DwlgYRsaxNfLsQ/gMy8A==}
 
+  '@rbxts/lapis@0.3.8':
+    resolution: {integrity: sha512-SQTVdSp47Rh7nzuI/ArUsGssz2+KmciPlue4Qlj3i9iO2p3Xgf1ZsgfhvMemPih/kFdjSH47E8wHGA4dY/Y+AA==}
+    peerDependencies:
+      '@rbxts/t': '*'
+
+  '@rbxts/lemon-signal@1.2.0':
+    resolution: {integrity: sha512-R8iZqtwqLCnA4g2gS8d8j/QVnctkvzLQspq3VfuKfFbXp+Zqs7rw/2LebD/9ifX/NGpHAGgatRqj0C6DABT9Rw==}
+
+  '@rbxts/log@0.6.3':
+    resolution: {integrity: sha512-YZpDvjL7yif9aYuNAkuM9vnegcwQmOwX0CfvGfWvrzCpmARY4Ey2pTMhoEgxKo36HcdPPi3aLxmcuvn0NHrPPg==}
+
+  '@rbxts/luau-polyfill@1.1.3':
+    resolution: {integrity: sha512-HhTeV1aeCDrr6PoTCc0khnAAxyBcDm0iXeu/t7l96u2Mr1fyA+0ugZd66A1xpThZwz/7YbTSFpiFp5SIFeu2Ug==}
+
+  '@rbxts/maid@1.1.0':
+    resolution: {integrity: sha512-bVWXZ0p2M3OJzPzvN5fY0T4s37ezUMY7EX31Xspp7Ds4C/K9yE4MHMRXjtlNvsYVPmoc5tdhAbpZY02Veix5lg==}
+
   '@rbxts/matter@0.8.5':
     resolution: {integrity: sha512-xQ+ggK6w1fEHeVD1W3KAojHSZrO+H3eua344fTMo87WyeZ+Y5sDxLadOQHBtNR4dLh7kMS0HJ7MPRiFktjkPAA==}
+
+  '@rbxts/message-templates@0.3.2':
+    resolution: {integrity: sha512-79onYskH3pgrBT73Zs+biQ31vAVvupKQaxGNWGjyGsxwNhO2YaN/qkut0bvOshaGa+ZzqAXApRVrN8ifIMPiMQ==}
+
+  '@rbxts/object-cache@1.4.5':
+    resolution: {integrity: sha512-PjPfljNRU5ksWOEuh5IFPx14t3Df5D9H6c27pTmTZ+tzGvnYsMvyfsmZal+wxRgKR0rxI8jZ0L0sZSc6LmB9LQ==}
+
+  '@rbxts/object-utils@1.0.4':
+    resolution: {integrity: sha512-dLLhf022ipV+9i910sOE7kl9losKHoon0WgeerHqVMQA5EYsLUsVT2AxhJuhk8MiDn5oJ2GiFofE/LadY9TpJQ==}
 
   '@rbxts/pretty-format@3.13.3-ts.1':
     resolution: {integrity: sha512-uTSxVdfQv/cD+kvttLzw/LfyNC35mxAsJrSqom+F94etDYlz7ZRvG75izSPfzG2oVRSrhv6roaeWPeTqkpcIug==}
@@ -694,8 +770,23 @@ packages:
   '@rbxts/services@1.6.0':
     resolution: {integrity: sha512-YH02E1/tGHeMXB0Mam8qPdAZa2fjQWdylEscSL4Zn0RIaQeByYImA2qUsXM3nBdhcyKHDwltzSznDKyCGfFEWA==}
 
-  '@rbxts/types@1.0.917':
-    resolution: {integrity: sha512-QYOs4nGS2cu2phXu5su9kGF/HCImt88J6M10UQ5AW0RE+oginDYhPHTqAKiNPFu2HZz0rSjvyezn5Ek3wCcdcQ==}
+  '@rbxts/sift@0.0.11':
+    resolution: {integrity: sha512-JT1WTLWKkoBdDaokPz/hEjC64kessP/MPe0OW2rHGtkpQkgnnvOx4wQXzqQs1XMwciyKazjhJZjoV83X3dJplA==}
+
+  '@rbxts/sift@0.0.9':
+    resolution: {integrity: sha512-5Ycw3mSuUYbPT36Zcs6DtsikdlRcBOo2eG7gvM+HW+2L+VD7bU6+txWELZif6nX6DjjXQtYk19do/frTilfbKw==}
+
+  '@rbxts/signal@1.1.1':
+    resolution: {integrity: sha512-WX+ONE+ld4pG9PvRkR8OgDld9NpaV1RfXyUIw+Q2oXP/5rehkYzvt20NWtrLAP3NhMc5inYInLd+hnufey6nFw==}
+
+  '@rbxts/t@3.2.1':
+    resolution: {integrity: sha512-/fnf2QSx+TI3HSJ6QW2ikvGQk0mlx/63UXo60pLAKGqbxXiAuTJh88bpKpHw6aCzfFLJAwrVIcgCUOokLMPcag==}
+
+  '@rbxts/types@1.0.918':
+    resolution: {integrity: sha512-PNtzv1jitSkr+v5j06A44Xa98NMTTkSxZ1vvUcUzW4q1WZ7A750FeFhZqjyKP2rcR8XMSiQWcycC4svSFV6RJw==}
+
+  '@rbxts/validate-tree@2.0.2':
+    resolution: {integrity: sha512-OA0E9ZjEeOpPa3XeV5/oC51aro2QFcL5dItufbagYZW8TOsX8C+FDXLx+A/ulMwcF42WcFNcQybxzcWSS/QSrA==}
 
   '@roblox-ts/luau-ast@2.0.0':
     resolution: {integrity: sha512-cmMi093IdwBOLVxwuordhM8AmtbyTIyRpsTbB0D/JauidW4SXsQRQowSwWjHo4QP0DRJBXvOIlxtqEQi50uNzQ==}
@@ -1214,6 +1305,10 @@ packages:
   istanbul-reports@3.2.0:
     resolution: {integrity: sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA==}
     engines: {node: '>=8'}
+
+  jiti@2.6.1:
+    resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
+    hasBin: true
 
   js-yaml@3.14.2:
     resolution: {integrity: sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg==}
@@ -1992,17 +2087,25 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@flamework/core@1.3.2':
+    dependencies:
+      '@rbxts/maid': 1.1.0
+      '@rbxts/object-utils': 1.0.4
+      '@rbxts/services': 1.6.0
+      '@rbxts/signal': 1.1.1
+      '@rbxts/t': 3.2.1
+
   '@inquirer/external-editor@1.0.3':
     dependencies:
       chardet: 2.1.1
       iconv-lite: 0.7.2
 
-  '@isentinel/jest-roblox@0.2.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)':
+  '@isentinel/jest-roblox@0.2.7(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(dotenv@8.6.0)(jiti@2.6.1)':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@roblox-ts/rojo-resolver': 1.1.0
       arktype: 2.2.0
-      c12: 4.0.0-beta.4(dotenv@8.6.0)
+      c12: 4.0.0-beta.4(dotenv@8.6.0)(jiti@2.6.1)
       confbox: 0.2.4
       defu: 6.1.6
       get-tsconfig: 4.13.7
@@ -2043,11 +2146,30 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/b56ecccc7ae388f04f9f2d09f29e67e3debcff91#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.917)(type-fest@5.6.0)':
+  '@lisachandra/core@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/core(@flamework/core@1.3.2)(@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0))(@rbxts/centurion@1.0.1)(@rbxts/crate@1.0.3-rc.1)(@rbxts/lapis@0.3.8(@rbxts/t@3.2.1))(@rbxts/lemon-signal@1.2.0)(@rbxts/log@0.6.3)(@rbxts/luau-polyfill@1.1.3)(@rbxts/matter@0.8.5)(@rbxts/message-templates@0.3.2)(@rbxts/object-cache@1.4.5)(@rbxts/services@1.6.0)(@rbxts/sift@0.0.11)(@rbxts/t@3.2.1)(@rbxts/validate-tree@2.0.2)(type-fest@5.6.0)':
+    dependencies:
+      '@flamework/core': 1.3.2
+      '@lisachandra/types': https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)
+      '@rbxts/centurion': 1.0.1
+      '@rbxts/crate': 1.0.3-rc.1
+      '@rbxts/lapis': 0.3.8(@rbxts/t@3.2.1)
+      '@rbxts/lemon-signal': 1.2.0
+      '@rbxts/log': 0.6.3
+      '@rbxts/luau-polyfill': 1.1.3
+      '@rbxts/matter': 0.8.5
+      '@rbxts/message-templates': 0.3.2
+      '@rbxts/object-cache': 1.4.5
+      '@rbxts/services': 1.6.0
+      '@rbxts/sift': 0.0.11
+      '@rbxts/t': 3.2.1
+      '@rbxts/validate-tree': 2.0.2
+      type-fest: 5.6.0
+
+  '@lisachandra/types@https://codeload.github.com/lisachandra/rbxts/tar.gz/0366a5317d3983429a3e6630ebc26d6166c00c2e#path:packages/types(@rbxts/compiler-types@3.0.0-types.0)(@rbxts/matter@0.8.5)(@rbxts/types@1.0.918)(type-fest@5.6.0)':
     dependencies:
       '@rbxts/compiler-types': 3.0.0-types.0
       '@rbxts/matter': 0.8.5
-      '@rbxts/types': 1.0.917
+      '@rbxts/types': 1.0.918
       type-fest: 5.6.0
 
   '@manypkg/find-root@1.1.0':
@@ -2516,7 +2638,20 @@ snapshots:
     dependencies:
       '@rbxts-js/collections': 1.2.3-ts.1
 
+  '@rbxts/beacon@2.1.1': {}
+
+  '@rbxts/centurion@1.0.1':
+    dependencies:
+      '@rbxts/beacon': 2.1.1
+      '@rbxts/services': 1.6.0
+      '@rbxts/t': 3.2.1
+
   '@rbxts/compiler-types@3.0.0-types.0': {}
+
+  '@rbxts/crate@1.0.3-rc.1':
+    dependencies:
+      '@rbxts/lemon-signal': 1.2.0
+      '@rbxts/sift': 0.0.9
 
   '@rbxts/emittery@3.13.3-ts.1':
     dependencies:
@@ -2542,7 +2677,27 @@ snapshots:
       '@rbxts/jest-globals': 3.13.3-ts.1
       '@rbxts/pretty-format': 3.13.3-ts.1
 
+  '@rbxts/lapis@0.3.8(@rbxts/t@3.2.1)':
+    dependencies:
+      '@rbxts/t': 3.2.1
+
+  '@rbxts/lemon-signal@1.2.0': {}
+
+  '@rbxts/log@0.6.3':
+    dependencies:
+      '@rbxts/message-templates': 0.3.2
+
+  '@rbxts/luau-polyfill@1.1.3': {}
+
+  '@rbxts/maid@1.1.0': {}
+
   '@rbxts/matter@0.8.5': {}
+
+  '@rbxts/message-templates@0.3.2': {}
+
+  '@rbxts/object-cache@1.4.5': {}
+
+  '@rbxts/object-utils@1.0.4': {}
 
   '@rbxts/pretty-format@3.13.3-ts.1':
     dependencies:
@@ -2550,7 +2705,17 @@ snapshots:
 
   '@rbxts/services@1.6.0': {}
 
-  '@rbxts/types@1.0.917': {}
+  '@rbxts/sift@0.0.11': {}
+
+  '@rbxts/sift@0.0.9': {}
+
+  '@rbxts/signal@1.1.1': {}
+
+  '@rbxts/t@3.2.1': {}
+
+  '@rbxts/types@1.0.918': {}
+
+  '@rbxts/validate-tree@2.0.2': {}
 
   '@roblox-ts/luau-ast@2.0.0': {}
 
@@ -2653,7 +2818,7 @@ snapshots:
 
   bytes@3.1.2: {}
 
-  c12@4.0.0-beta.4(dotenv@8.6.0):
+  c12@4.0.0-beta.4(dotenv@8.6.0)(jiti@2.6.1):
     dependencies:
       confbox: 0.2.4
       defu: 6.1.6
@@ -2663,6 +2828,7 @@ snapshots:
       rc9: 3.0.1
     optionalDependencies:
       dotenv: 8.6.0
+      jiti: 2.6.1
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -3081,6 +3247,8 @@ snapshots:
     dependencies:
       html-escaper: 2.0.2
       istanbul-lib-report: 3.0.1
+
+  jiti@2.6.1: {}
 
   js-yaml@3.14.2:
     dependencies:
