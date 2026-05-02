@@ -1,17 +1,19 @@
 {
-	"name": "@lisachandra/test-plugin",
+	"name": "@lisachandra/test-demo",
 	"version": "0.0.0",
-	"description": "Plugin test place for validating constant Studio bridge and io-serve integration.",
-	"keywords": ["roblox", "rbxts", "test", "plugin", "io-serve"],
+	"description": "Combined manual verification place for exercising constant runtime, Studio editors, and plugin persistence flows.",
+	"keywords": ["roblox", "rbxts", "demo", "constants", "plugin", "io-serve"],
 	"private": true,
 	"type": "module",
 	"scripts": {
 		"build": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --verbose --allowCommentDirectives",
 		"dev": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --watch --allowCommentDirectives",
-		"test": "pnpm exec jest-roblox ./jest.config.ts"
+		"serve": "pnpm run --parallel \"/^serve:.*/\"",
+		"serve:rbx-tree": "io-serve",
+		"serve:sourcemap": "rojo sourcemap --watch default.project.json --output sourcemap.json",
+		"serve:rojo": "rojo serve default.project.json"
 	},
 	"devDependencies": {
-		"@isentinel/jest-roblox": "catalog:",
 		"roblox-ts": "catalog:",
 		"@isentinel/tsconfig": "catalog:",
 		"@rbxts/compiler-types": "catalog:",
@@ -25,8 +27,6 @@
 		"@lisachandra/core": "catalog:",
 		"@lisachandra/constant": "workspace:*",
 		"@lisachandra/plugin": "workspace:*",
-		"@rbxts/services": "catalog:",
-		"@rbxts/jest": "catalog:",
-		"@rbxts/jest-globals": "catalog:"
+		"@rbxts/services": "catalog:"
 	}
 }

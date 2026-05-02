@@ -1,4 +1,11 @@
-import { applyConstantUpdate, type ConstantPluginUpdateRequest, type ConstantScope, type PersistedConstantFile, getConstantsFilePath } from "./persistence";
+import {
+	applyConstantUpdate,
+	getConstantsFilePath,
+	resolveConstantsFilePath,
+	type ConstantPluginUpdateRequest,
+	type ConstantScope,
+	type PersistedConstantFile,
+} from "./persistence";
 
 export interface ConstantPersistenceWriter {
 	write(path: string, contents: PersistedConstantFile): void;
@@ -15,30 +22,33 @@ export function createConstantPluginPersistenceService(
 	writer: ConstantPersistenceWriter,
 	initialSnapshots: Partial<Record<ConstantScope, PersistedConstantFile>> = {},
 ): ConstantPluginPersistenceService {
-	const snapshots = new Map<ConstantScope, PersistedConstantFile>();
+	const snapshots = new Map<string, PersistedConstantFile>();
 
 	for (const scope of ["client", "server"] as const) {
-		snapshots.set(scope, initialSnapshots[scope] ?? {});
+		snapshots.set(getConstantsFilePath(scope), initialSnapshots[scope] ?? {});
 	}
 
 	return {
 		getSnapshot(scope: ConstantScope): PersistedConstantFile {
-			return snapshots.get(scope) ?? {};
+			return snapshots.get(getConstantsFilePath(scope)) ?? {};
 		},
 
 		receiveUpdate(request: ConstantPluginUpdateRequest): PersistedConstantFile {
-			const nextFile = applyConstantUpdate(this.getSnapshot(request.scope), request);
-			snapshots.set(request.scope, nextFile);
+			const path = resolveConstantsFilePath(request);
+			const nextFile = applyConstantUpdate(snapshots.get(path) ?? {}, request);
+			snapshots.set(path, nextFile);
 			return nextFile;
 		},
 
 		flushScope(scope: ConstantScope): void {
-			writer.write(getConstantsFilePath(scope), this.getSnapshot(scope));
+			const path = getConstantsFilePath(scope);
+			writer.write(path, snapshots.get(path) ?? {});
 		},
 
 		flushAll(): void {
-			this.flushScope("client");
-			this.flushScope("server");
+			for (const [path, snapshot] of snapshots) {
+				writer.write(path, snapshot);
+			}
 		},
 	};
 }

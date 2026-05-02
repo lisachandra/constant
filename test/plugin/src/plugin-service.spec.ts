@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@rbxts/jest-globals";
-import { createConstantPluginPersistenceService } from "@lisachandra/plugin/out/service";
+import { createConstantPluginPersistenceService } from "@lisachandra/plugin";
 
 describe("plugin persistence service", () => {
 	test("stores snapshots per scope", () => {
@@ -50,6 +50,29 @@ describe("plugin persistence service", () => {
 		const firstWrite = writes[0]!;
 		expect(firstWrite.path).toBe("src/client/constants.json");
 		expect((firstWrite.contents as { WALK_SPEED?: number }).WALK_SPEED).toBe(24);
+	});
+
+
+	test("writes custom persist paths from update payloads", () => {
+		const writes = new Array<{ path: string; contents: unknown }>();
+		const service = createConstantPluginPersistenceService({
+			write(path, contents) {
+				writes.push({ path, contents });
+			},
+		});
+
+		service.receiveUpdate({
+			scope: "client",
+			name: "WALK_SPEED",
+			serializedValue: 24,
+			serializedDefault: 16,
+			persistPath: "custom/client/constants.json",
+		});
+
+		service.flushAll();
+
+		expect(writes.size()).toBe(1);
+		expect(writes[0]!.path).toBe("custom/client/constants.json");
 	});
 
 	test("flushAll writes both scopes", () => {

@@ -5,16 +5,25 @@ import {
 	serializedEquals,
 	tryReadSerializedValue,
 } from "./serialize";
-import type { AddConstant, ConstantDefinition, ConstantScope, PersistedConstantFile, SupportedPrimitive } from "./types";
+import type {
+	AddConstant,
+	ConstantDefinition,
+	ConstantScope,
+	PersistedConstantFile,
+	SupportedPrimitive,
+} from "./types";
 
 export class ConstantStore<T extends object = {}> {
 	private readonly definitions = new Map<string, ConstantDefinition>();
 	private readonly values = {} as T;
 	private readonly liveOverrides = new Map<string, SupportedPrimitive>();
+	private readonly listeners = new Set<() => void>();
 
 	public constructor(
 		private readonly scope: ConstantScope,
 		private readonly persisted: PersistedConstantFile = {},
+		private readonly persistPath: string,
+		private sourcePath: string,
 	) {}
 
 	public add<K extends string, V extends SupportedPrimitive>(name: K, defaultValue: V): ConstantStore<AddConstant<T, K, V>> {
@@ -32,6 +41,14 @@ export class ConstantStore<T extends object = {}> {
 		return this.values;
 	}
 
+	public subscribe(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => {
+			this.listeners.delete(listener);
+		};
+	}
+
+
 	public getDefinitions(): ReadonlyMap<string, ConstantDefinition> {
 		return this.definitions;
 	}
@@ -40,6 +57,25 @@ export class ConstantStore<T extends object = {}> {
 		return this.scope;
 	}
 
+	public getPersistPath(): string {
+		return this.persistPath;
+	}
+
+	public getSourcePath(): string {
+		return this.sourcePath;
+	}
+
+	public setSourcePath(sourcePath: string): void {
+		this.sourcePath = sourcePath;
+	}
+
+	private notifyListeners(): void {
+		for (const listener of this.listeners) {
+			listener();
+		}
+	}
+
+
 	public updateValue<K extends keyof T & string>(name: K, value: T[K] & SupportedPrimitive): void {
 		const definition = this.definitions.get(name);
 		if (!definition) error(`Unknown constant: ${name}`);
@@ -47,6 +83,7 @@ export class ConstantStore<T extends object = {}> {
 		definition.hasLiveOverride = true;
 		(this.values as Record<string, SupportedPrimitive>)[name] = value;
 		this.liveOverrides.set(name, value);
+		this.notifyListeners();
 	}
 
 	public resetValue<K extends keyof T & string>(name: K): void {
@@ -57,6 +94,7 @@ export class ConstantStore<T extends object = {}> {
 		definition.hasLiveOverride = false;
 		(this.values as Record<string, SupportedPrimitive>)[name] = nextValue;
 		this.liveOverrides.delete(name);
+		this.notifyListeners();
 	}
 
 	public getPersistedSnapshot(): PersistedConstantFile {

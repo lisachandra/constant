@@ -194,6 +194,11 @@ function main(plugin: Plugin): void {
 	});
 
 	studioWidget.flushButton.MouseButton1Click.Connect(() => {
+		if (RunService.IsRunning()) {
+			warn("Flush All is unavailable during play mode. Persist through the server runtime instead.");
+			return;
+		}
+
 		ensureBootstrapConnected().coordinator.flushAll();
 		updateStudioPluginStatus();
 	});

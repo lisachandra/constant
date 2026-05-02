@@ -11,6 +11,12 @@ export function encodePersistedConstantFile(contents: PersistedConstantFile): st
 	return HttpService.JSONEncode(contents);
 }
 
+export function buildIoServeWriteUrl(baseUrl: string, path: string): string {
+	const normalizedBaseUrl = baseUrl.gsub("/+$", "")[0];
+	const normalizedPath = path.gsub("^/+", "")[0];
+	return `${normalizedBaseUrl}/${normalizedPath}`;
+}
+
 export function createIoServeWriter(
 	send: (request: ConstantIoServeWriteRequest) => void,
 ): ConstantPersistenceWriter {
@@ -24,8 +30,31 @@ export function createIoServeWriter(
 	};
 }
 
-export function createHttpIoServeWriter(baseUrl = "http://127.0.0.1:3000"): ConstantPersistenceWriter {
+export function createHttpIoServeWriter(baseUrl = "http://localhost:33333"): ConstantPersistenceWriter {
 	return createIoServeWriter((request) => {
-		HttpService.PostAsync(`${baseUrl}/${request.path}`, request.body, Enum.HttpContentType.ApplicationJson);
+		const url = buildIoServeWriteUrl(baseUrl, request.path);
+		const [success, responseOrError] = pcall(() =>
+			HttpService.RequestAsync({
+				Url: url,
+				Method: "PUT",
+				Headers: {
+					["Content-Type"]: "application/json",
+				},
+				Body: request.body,
+			}),
+		);
+
+		if (!success) {
+			error(`Failed to write constants through io-serve at ${url}: ${tostring(responseOrError)}`);
+		}
+
+		const response = responseOrError as {
+			Success: boolean;
+			StatusCode: number;
+			StatusMessage: string;
+		};
+		if (!response.Success) {
+			error(`io-serve rejected constant write to ${url} with status ${response.StatusCode}: ${response.StatusMessage}`);
+		}
 	});
 }

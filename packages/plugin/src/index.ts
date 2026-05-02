@@ -1,7 +1,13 @@
-export { applyConstantUpdate, getConstantsFilePath } from "./persistence";
+export { applyConstantUpdate, getConstantsFilePath, resolveConstantsFilePath } from "./persistence";
 export { startConstantPluginBootstrap, type ConstantPluginBootstrapHandle, type ConstantPluginBootstrapOptions } from "./bootstrap";
 export { createConstantPluginCoordinator, type ConstantPluginCoordinator, type ConstantPluginCoordinatorOptions } from "./coordinator";
-export { createHttpIoServeWriter, createIoServeWriter, encodePersistedConstantFile, type ConstantIoServeWriteRequest } from "./writer";
+export {
+	buildIoServeWriteUrl,
+	createHttpIoServeWriter,
+	createIoServeWriter,
+	encodePersistedConstantFile,
+	type ConstantIoServeWriteRequest,
+} from "./writer";
 export { createConstantPluginPersistenceService, type ConstantPersistenceWriter, type ConstantPluginPersistenceService } from "./service";
 export {
 	CONSTANT_TRANSPORT_EVENT_NAME,
@@ -15,6 +21,7 @@ export interface ConstantPluginUpdateRequest {
 	name: string;
 	serializedValue: unknown;
 	serializedDefault: unknown;
+	persistPath?: string;
 }
 
 export interface ConstantPluginBridge {
@@ -27,8 +34,9 @@ export function isConstantPluginUpdateRequest(value: unknown): value is Constant
 	return (
 		(request.scope === "client" || request.scope === "server") &&
 		typeIs(request.name, "string") &&
-		"serializedValue" in request &&
-		"serializedDefault" in request
+		("serializedValue" in request) &&
+		("serializedDefault" in request) &&
+		(request.persistPath === undefined || typeIs(request.persistPath, "string"))
 	);
 }
 

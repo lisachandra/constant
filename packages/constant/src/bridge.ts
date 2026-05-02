@@ -10,12 +10,14 @@ export function createConstantUpdatePayload(
 	name: string,
 	value: SupportedPrimitive,
 	defaultValue: SupportedPrimitive,
+	persistPath?: string,
 ): ConstantUpdatePayload {
 	return {
 		scope,
 		name,
 		serializedValue: serializeConstant(value),
 		serializedDefault: serializeConstant(defaultValue),
+		persistPath,
 	};
 }
 
@@ -25,8 +27,9 @@ export function publishConstantUpdate(
 	name: string,
 	value: SupportedPrimitive,
 	defaultValue: SupportedPrimitive,
+	persistPath?: string,
 ): void {
-	sink?.publish(createConstantUpdatePayload(scope, name, value, defaultValue));
+	sink?.publish(createConstantUpdatePayload(scope, name, value, defaultValue, persistPath));
 }
 
 export function createMemoryUpdateSink(onPublish: (payload: ConstantUpdatePayload) => void): ConstantUpdateSink {

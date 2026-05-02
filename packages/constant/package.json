@@ -26,8 +26,8 @@
 	"types": "out/index.d.ts",
 	"files": ["out", "default.project.json", "!**/*.tsbuildinfo"],
 	"scripts": {
-		"build": "shx rm -rf out && rbxtsc --verbose --allowCommentDirectives",
-		"dev": "shx rm -rf out && rbxtsc --watch --allowCommentDirectives",
+		"build": "rbxtsc --verbose --allowCommentDirectives",
+		"dev": "rbxtsc --watch --allowCommentDirectives",
 		"clean": "shx rm -rf out"
 	},
 	"devDependencies": {
@@ -37,11 +37,13 @@
 		"@lisachandra/types": "catalog:",
 		"@rbxts/types": "catalog:",
 		"@rbxts/services": "catalog:",
+		"@rbxts/luau-polyfill": "catalog:",
 		"@rbxts/iris": "catalog:",
 		"shx": "catalog:"
 	},
 	"peerDependencies": {
 		"@rbxts/services": "*",
+		"@rbxts/luau-polyfill": "*",
 		"@rbxts/iris": "*"
 	},
 	"publishConfig": {

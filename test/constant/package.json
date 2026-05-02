@@ -6,11 +6,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "shx rm -rf out && rbxtsc --type 'game' --includePath node_modules/@lisachandra/types/out/include --noInclude --verbose --allowCommentDirectives",
-		"dev": "rbxtsc --type 'game' --includePath node_modules/@lisachandra/types/out/include --noInclude --watch --allowCommentDirectives",
-		"serve:rbx-tree": "io-serve",
-		"serve:sourcemap": "rojo sourcemap --watch default.project.json --output sourcemap.json",
-		"serve:rojo": "rojo serve default.project.json",
+		"build": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --verbose --allowCommentDirectives",
+		"dev": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --watch --allowCommentDirectives",
 		"test": "pnpm exec jest-roblox ./jest.config.ts"
 	},
 	"devDependencies": {

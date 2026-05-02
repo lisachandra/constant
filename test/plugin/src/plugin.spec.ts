@@ -2,10 +2,12 @@ import { describe, expect, test } from "@rbxts/jest-globals";
 import {
 	applyConstantUpdate,
 	connectPluginTransport,
+	buildIoServeWriteUrl,
 	createPluginBridge,
 	getConstantsFilePath,
 	getOrCreatePluginTransportEvent,
 	isConstantPluginUpdateRequest,
+	resolveConstantsFilePath,
 } from "@lisachandra/plugin";
 
 describe("plugin bridge", () => {
@@ -32,6 +34,26 @@ describe("plugin bridge", () => {
 	test("maps scopes to constants.json paths", () => {
 		expect(getConstantsFilePath("client")).toBe("src/client/constants.json");
 		expect(getConstantsFilePath("server")).toBe("src/server/constants.json");
+	});
+
+	test("builds io-serve write urls with a single slash", () => {
+		expect(buildIoServeWriteUrl("http://localhost:33333", "src/client/constants.json")).toBe(
+			"http://localhost:33333/src/client/constants.json",
+		);
+		expect(buildIoServeWriteUrl("http://localhost:33333/", "/src/server/constants.json")).toBe(
+			"http://localhost:33333/src/server/constants.json",
+		);
+	});
+
+
+	test("prefers explicit persist paths when present", () => {
+		expect(resolveConstantsFilePath({
+			scope: "client",
+			name: "WALK_SPEED",
+			serializedValue: 24,
+			serializedDefault: 16,
+			persistPath: "custom/client/constants.json",
+			})).toBe("custom/client/constants.json");
 	});
 
 	test("applies updates into flat persisted files", () => {

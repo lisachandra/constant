@@ -15,6 +15,11 @@ export interface ConstantPluginUpdateRequest {
 	name: string;
 	serializedValue: unknown;
 	serializedDefault: unknown;
+	persistPath?: string;
+}
+
+export function resolveConstantsFilePath(request: ConstantPluginUpdateRequest): string {
+	return request.persistPath ?? getConstantsFilePath(request.scope);
 }
 
 export interface PersistedConstantFile {

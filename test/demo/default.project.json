@@ -1,0 +1,32 @@
+{
+	"name": "demo",
+	"globIgnorePaths": ["**/package.json", "**/tsconfig.json", "**/README.md"],
+	"emitLegacyScripts": false,
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"client": {
+				"$path": "out/client"
+			},
+			"shared": {
+				"$path": "out/shared"
+			},
+			"server": {
+				"$path": "out/server"
+			},
+			"rbxts_include": {
+				"$className": "Folder",
+				"node_modules": {
+					"$className": "Folder",
+					"@lisachandra": {
+						"$path": "node_modules/@lisachandra"
+					},
+					"@rbxts": {
+						"$path": "node_modules/@rbxts"
+					}
+				}
+			}
+		}
+	}
+}

@@ -52,7 +52,11 @@ export interface ConstantUpdatePayload {
 	name: string;
 	serializedValue: SerializedConstant;
 	serializedDefault: SerializedConstant;
+	persistPath?: string;
 }
+
+export interface ConstantReplicationRequest extends ConstantUpdatePayload {}
+export interface ConstantReplicationUpdate extends ConstantUpdatePayload {}
 
 export interface ConstantDefinition<V extends SupportedPrimitive = SupportedPrimitive> {
 	readonly name: string;

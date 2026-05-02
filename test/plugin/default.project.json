@@ -1,6 +1,7 @@
 {
 	"name": "test",
 	"globIgnorePaths": ["**/package.json", "**/tsconfig.json"],
+	"emitLegacyScripts": false,
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
