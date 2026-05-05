@@ -19,6 +19,7 @@ describe("plugin bootstrap shape", () => {
 			name: "WALK_SPEED",
 			serializedValue: 12,
 			serializedDefault: 10,
+            sourcePath: "src/client/main.client.ts",
 		});
 
 		coordinator.disconnect();
@@ -28,9 +29,10 @@ describe("plugin bootstrap shape", () => {
 			name: "WALK_SPEED",
 			serializedValue: 20,
 			serializedDefault: 10,
+            sourcePath: "src/client/main.client.ts",
 		});
 
 		expect(writes.size()).toBe(1);
-		expect((writes[0]!.contents as { WALK_SPEED?: number }).WALK_SPEED).toBe(12);
+		expect((writes[0]!.contents as Record<string, { WALK_SPEED?: number }>)["src/client/main.client.ts"]!.WALK_SPEED).toBe(12);
 	});
 });

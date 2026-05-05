@@ -2,12 +2,14 @@ import { RunService } from "@rbxts/services";
 
 export type {
 	AddConstant,
+	ConfiguredConstantModule,
 	ConstantDefinition,
 	ConstantEditorOptions,
 	ConstantPersistMode,
 	ConstantScope,
 	ConstantUpdatePayload,
 	PersistedConstantFile,
+	PersistedConstantGroup,
 	PrimitiveKind,
 	SerializedConstant,
 	SupportedPrimitive,
@@ -25,25 +27,21 @@ export {
 export { createConstantUpdatePayload, createMemoryUpdateSink, publishConstantUpdate } from "./bridge";
 export {
 	CONSTANT_TRANSPORT_EVENT_NAME,
-	CONSTANT_TRANSPORT_FOLDER_NAME,
+	CONSTANT_REPLICATION_EVENT_NAME,
+	getOrCreateReplicatedEditorEvent,
+	getOrCreateReplicationEvent,
 	connectBindableTransport,
 	createBindableEventSink,
 	getOrCreateTransportEvent,
 	publishBindableTransport,
 } from "./transport";
 export {
-	CONSTANT_REPLICATION_FOLDER_NAME,
-	CONSTANT_REPLICATION_REQUEST_EVENT_NAME,
-	CONSTANT_REPLICATION_UPDATE_EVENT_NAME,
 	applyReplicationUpdate,
 	configureAutomaticConstantReplication,
 	createConstantReplicationClient,
 	createConstantReplicationServer,
-	getOrCreateReplicationRequestEvent,
-	getOrCreateReplicationUpdateEvent,
 	type AutomaticConstantReplicationOptions,
 	type ConstantReplicationClientHandle,
-	type ConstantReplicationClientOptions,
 	type ConstantReplicationServerHandle,
 	type ConstantReplicationServerOptions,
 } from "./replication";
@@ -55,13 +53,66 @@ import { createBindableEventSink } from "./transport";
 import { createConstantReplicationClient, createConstantReplicationServer, type ConstantReplicationClientHandle, type ConstantReplicationServerHandle } from "./replication";
 import type {
 	AddConstant,
+	ConfiguredConstantModule,
 	ConstantDefinition,
 	ConstantEditorOptions,
 	ConstantScope,
 	ConstantUpdatePayload,
 	PersistedConstantFile,
+	PersistedConstantGroup,
 	SupportedPrimitive,
 } from "./types";
+
+interface ConstantRuntimeConfiguration {
+	persistPath: string;
+	persistedBySource: PersistedConstantFile;
+	editorSetup?: { keyCode?: Enum.KeyCode; title?: string };
+}
+
+const configuredConstants = new Map<ConstantScope, ConstantRuntimeConfiguration>();
+
+function getCurrentScope(): ConstantScope {
+	return RunService.IsClient() ? "client" : "server";
+}
+
+function getCallerSourcePath(): string {
+	return `${debug.info(3, "s")[0]}`;
+}
+
+function normalizeConfiguredModule(persistModule: ConfiguredConstantModule): PersistedConstantFile {
+	return persistModule;
+}
+
+/**
+ * Configures the shared persisted constant entrypoint for the current runtime environment.
+ * @param persistPath - The JSON path used by Studio persistence and replication metadata.
+ * @param persistModule - The imported persisted JSON module for this environment.
+ * @throws If called more than once for the same environment scope.
+ */
+export function configureConstant(
+	persistPath: string,
+	persistModule: ConfiguredConstantModule,
+	editorSetup?: { keyCode?: Enum.KeyCode; title?: string },
+): void {
+	const scope = getCurrentScope();
+	if (configuredConstants.has(scope)) {
+		error(`configureConstant() has already been called for ${scope} scope.`);
+	}
+
+	configuredConstants.set(scope, {
+		persistPath,
+		persistedBySource: normalizeConfiguredModule(persistModule),
+		editorSetup,
+	});
+}
+
+function getConfiguredConstantRuntime(scope: ConstantScope): ConstantRuntimeConfiguration {
+	const configured = configuredConstants.get(scope);
+	if (!configured) {
+		error(`Constant for ${scope} scope was created before configureConstant(). Call configureConstant(persistPath, persistModule) first.`);
+	}
+	return configured;
+}
 
 export class Constant<T extends object = {}> {
 	private readonly store: ConstantStore<T>;
@@ -70,18 +121,24 @@ export class Constant<T extends object = {}> {
 	private clientSnapshotSeeded = false;
 	private clientSnapshotQueued = false;
 
-	public constructor(persistPath: string);
-	public constructor(persistPath: string) {
-		const scope = RunService.IsClient() ? "client" : "server";
-		const sourcePath = `${debug.info(3, "s")[0]}`
+	public constructor() {
+		const scope = getCurrentScope();
+		const sourcePath = getCallerSourcePath();
+		const configured = getConfiguredConstantRuntime(scope);
+		const persisted = configured.persistedBySource[sourcePath] ?? {};
+		this.store = new ConstantStore(scope, persisted, configured.persistPath, sourcePath);
 
-		this.store = new ConstantStore(scope, {}, persistPath, sourcePath);
+		if (scope === "client" && configured.editorSetup) {
+			const { keyCode = Enum.KeyCode.F8, title } = configured.editorSetup;
+			task.defer(() => {
+				this.bindEditorHotkey(keyCode, { title });
+			});
+		}
 	}
 
 	private ensureAutomaticServerReplication(): void {
 		if (!RunService.IsServer()) return;
 		if (this.store.getScope() !== "server") return;
-		if (!this.store.getPersistPath()) return;
 		if (!this.replicationServerHandle) {
 			this.replicationServerHandle = createConstantReplicationServer(this.store);
 			return;
@@ -92,7 +149,6 @@ export class Constant<T extends object = {}> {
 	private getOrCreateClientReplicationHandle(): ConstantReplicationClientHandle | undefined {
 		if (!RunService.IsClient()) return undefined;
 		if (this.store.getScope() !== "client") return undefined;
-		if (!this.store.getPersistPath()) return undefined;
 		this.replicationClientHandle ??= createConstantReplicationClient(this.store);
 		return this.replicationClientHandle;
 	}
@@ -108,6 +164,7 @@ export class Constant<T extends object = {}> {
 					name,
 					definition.currentValue,
 					definition.defaultValue,
+					this.store.getSourcePath(),
 					this.store.getPersistPath(),
 				),
 			);
@@ -118,7 +175,6 @@ export class Constant<T extends object = {}> {
 	private scheduleClientSnapshotSeed(): void {
 		if (!RunService.IsClient()) return;
 		if (this.store.getScope() !== "client") return;
-		if (!this.store.getPersistPath()) return;
 		if (this.clientSnapshotSeeded || this.clientSnapshotQueued) return;
 
 		this.clientSnapshotQueued = true;
@@ -166,7 +222,6 @@ export class Constant<T extends object = {}> {
 		return this.store.subscribe(() => listener(this.store.build()));
 	}
 
-
 	public getScope(): ConstantScope {
 		return this.store.getScope();
 	}
@@ -179,7 +234,7 @@ export class Constant<T extends object = {}> {
 		this.store.resetValue(name);
 	}
 
-	public getPersistedSnapshot(): PersistedConstantFile {
+	public getPersistedSnapshot(): PersistedConstantGroup {
 		return this.store.getPersistedSnapshot();
 	}
 

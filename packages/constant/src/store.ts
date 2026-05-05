@@ -9,7 +9,7 @@ import type {
 	AddConstant,
 	ConstantDefinition,
 	ConstantScope,
-	PersistedConstantFile,
+	PersistedConstantGroup,
 	SupportedPrimitive,
 } from "./types";
 
@@ -21,14 +21,14 @@ export class ConstantStore<T extends object = {}> {
 
 	public constructor(
 		private readonly scope: ConstantScope,
-		private readonly persisted: PersistedConstantFile = {},
+		private readonly persisted: PersistedConstantGroup = {},
 		private readonly persistPath: string,
 		private sourcePath: string,
 	) {}
 
 	public add<K extends string, V extends SupportedPrimitive>(name: K, defaultValue: V): ConstantStore<AddConstant<T, K, V>> {
 		if (this.definitions.has(name)) {
-			error(`Duplicate constant definition: ${name}`);
+			error(`Duplicate constant definition in ${this.sourcePath}: ${name}`);
 		}
 
 		const definition = this.createDefinition(name, defaultValue);
@@ -47,7 +47,6 @@ export class ConstantStore<T extends object = {}> {
 			this.listeners.delete(listener);
 		};
 	}
-
 
 	public getDefinitions(): ReadonlyMap<string, ConstantDefinition> {
 		return this.definitions;
@@ -75,7 +74,6 @@ export class ConstantStore<T extends object = {}> {
 		}
 	}
 
-
 	public updateValue<K extends keyof T & string>(name: K, value: T[K] & SupportedPrimitive): void {
 		const definition = this.definitions.get(name);
 		if (!definition) error(`Unknown constant: ${name}`);
@@ -97,8 +95,8 @@ export class ConstantStore<T extends object = {}> {
 		this.notifyListeners();
 	}
 
-	public getPersistedSnapshot(): PersistedConstantFile {
-		const output: PersistedConstantFile = { _defaults: {} };
+	public getPersistedSnapshot(): PersistedConstantGroup {
+		const output: PersistedConstantGroup = { _defaults: {} };
 		for (const [name, definition] of this.definitions) {
 			output[name] = serializeConstant(definition.currentValue);
 			output._defaults![name] = serializeConstant(definition.defaultValue);

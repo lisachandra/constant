@@ -21,6 +21,7 @@ export interface ConstantPluginUpdateRequest {
 	name: string;
 	serializedValue: unknown;
 	serializedDefault: unknown;
+	sourcePath: string;
 	persistPath?: string;
 }
 
@@ -34,6 +35,7 @@ export function isConstantPluginUpdateRequest(value: unknown): value is Constant
 	return (
 		(request.scope === "client" || request.scope === "server") &&
 		typeIs(request.name, "string") &&
+		typeIs(request.sourcePath, "string") &&
 		("serializedValue" in request) &&
 		("serializedDefault" in request) &&
 		(request.persistPath === undefined || typeIs(request.persistPath, "string"))

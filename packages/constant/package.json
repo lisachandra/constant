@@ -26,6 +26,7 @@
 	"types": "out/index.d.ts",
 	"files": ["out", "default.project.json", "!**/*.tsbuildinfo"],
 	"scripts": {
+		"prepare": "pnpm run build",
 		"build": "rbxtsc --verbose --allowCommentDirectives",
 		"dev": "rbxtsc --watch --allowCommentDirectives",
 		"clean": "shx rm -rf out"

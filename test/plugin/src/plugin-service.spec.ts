@@ -15,6 +15,7 @@ describe("plugin persistence service", () => {
 			name: "WALK_SPEED",
 			serializedValue: 24,
 			serializedDefault: 16,
+			sourcePath: "src/client/main.ts",
 		});
 
 		service.receiveUpdate({
@@ -22,10 +23,11 @@ describe("plugin persistence service", () => {
 			name: "DEBUG",
 			serializedValue: true,
 			serializedDefault: false,
+			sourcePath: "src/server/main.ts",
 		});
 
-		expect(service.getSnapshot("client").WALK_SPEED).toBe(24);
-		expect(service.getSnapshot("server").DEBUG).toBe(true);
+		expect(service.getSnapshot("client")["src/client/main.ts"]!.WALK_SPEED).toBe(24);
+		expect(service.getSnapshot("server")["src/server/main.ts"]!.DEBUG).toBe(true);
 		expect(writes.size()).toBe(0);
 	});
 
@@ -42,6 +44,7 @@ describe("plugin persistence service", () => {
 			name: "WALK_SPEED",
 			serializedValue: 24,
 			serializedDefault: 16,
+			sourcePath: "src/client/main.ts",
 		});
 
 		service.flushScope("client");
@@ -49,7 +52,7 @@ describe("plugin persistence service", () => {
 		expect(writes.size()).toBe(1);
 		const firstWrite = writes[0]!;
 		expect(firstWrite.path).toBe("src/client/constants.json");
-		expect((firstWrite.contents as { WALK_SPEED?: number }).WALK_SPEED).toBe(24);
+		expect((firstWrite.contents as Record<string, { WALK_SPEED?: number }>)["src/client/main.ts"]!.WALK_SPEED).toBe(24);
 	});
 
 
@@ -66,13 +69,16 @@ describe("plugin persistence service", () => {
 			name: "WALK_SPEED",
 			serializedValue: 24,
 			serializedDefault: 16,
+			sourcePath: "src/client/main.ts",
 			persistPath: "custom/client/constants.json",
 		});
 
 		service.flushAll();
 
-		expect(writes.size()).toBe(1);
-		expect(writes[0]!.path).toBe("custom/client/constants.json");
+		expect(writes.size()).toBe(3);
+		expect(writes[0]!.path).toBe("src/client/constants.json");
+		expect(writes[1]!.path).toBe("src/server/constants.json");
+		expect(writes[2]!.path).toBe("custom/client/constants.json");
 	});
 
 	test("flushAll writes both scopes", () => {
@@ -88,6 +94,7 @@ describe("plugin persistence service", () => {
 			name: "WALK_SPEED",
 			serializedValue: 24,
 			serializedDefault: 16,
+			sourcePath: "src/client/main.ts",
 		});
 
 		service.receiveUpdate({
@@ -95,6 +102,7 @@ describe("plugin persistence service", () => {
 			name: "DEBUG",
 			serializedValue: true,
 			serializedDefault: false,
+			sourcePath: "src/server/main.ts",
 		});
 
 		service.flushAll();
@@ -113,8 +121,10 @@ describe("plugin persistence service", () => {
 			},
 			{
 				server: {
-					EXISTING: 10,
-					_defaults: { EXISTING: 10 },
+					["src/server/init.ts"]: {
+						EXISTING: 10,
+						_defaults: { EXISTING: 10 },
+					},
 				},
 			},
 		);
@@ -124,12 +134,13 @@ describe("plugin persistence service", () => {
 			name: "WALK_SPEED",
 			serializedValue: 20,
 			serializedDefault: 16,
+			sourcePath: "src/server/init.ts",
 		});
 
 		const snapshot = service.getSnapshot("server");
-		expect(snapshot.EXISTING).toBe(10);
-		expect(snapshot.WALK_SPEED).toBe(20);
-		expect(snapshot._defaults?.EXISTING).toBe(10);
-		expect(snapshot._defaults?.WALK_SPEED).toBe(16);
+		expect(snapshot["src/server/init.ts"]!.EXISTING).toBe(10);
+		expect(snapshot["src/server/init.ts"]!.WALK_SPEED).toBe(20);
+		expect(snapshot["src/server/init.ts"]!._defaults?.EXISTING).toBe(10);
+		expect(snapshot["src/server/init.ts"]!._defaults?.WALK_SPEED).toBe(16);
 	});
 });

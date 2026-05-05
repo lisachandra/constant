@@ -24,7 +24,6 @@
 	},
 	"dependencies": {
 		"@lisachandra/types": "catalog:",
-		"@lisachandra/core": "catalog:",
 		"@lisachandra/constant": "workspace:*",
 		"@lisachandra/plugin": "workspace:*",
 		"@rbxts/services": "catalog:"

@@ -1,8 +1,8 @@
-
 import { describe, expect, test } from "@rbxts/jest-globals";
 import { RunService } from "@rbxts/services";
 import {
 	connectBindableTransport,
+	configureConstant,
 	Constant,
 	ConstantStore,
 	createBindableEventSink,
@@ -12,42 +12,40 @@ import {
 	serializedEquals,
 	type ConstantUpdatePayload,
 	type PersistedConstantFile,
+	type PersistedConstantGroup,
 } from "@lisachandra/constant";
 
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 type ExpectType<T extends true> = T;
 
-const builtForTypeTest = new Constant("src/client/constants.json").add("WALK_SPEED", 16).add("DEBUG_RAYCASTS", false).build();
+const activePersistPath = RunService.IsClient() ? "src/client/constants.json" : "src/server/constants.json";
+configureConstant(activePersistPath, {});
+const builtForTypeTest = new Constant().add("WALK_SPEED", 16).add("DEBUG_RAYCASTS", false).build();
 type _BuildTypeCheck = ExpectType<Equal<typeof builtForTypeTest.WALK_SPEED, number>>;
 type _BuildTypeCheck2 = ExpectType<Equal<typeof builtForTypeTest.DEBUG_RAYCASTS, boolean>>;
 
 describe("Constant", () => {
 	test("build returns script defaults when no persisted data exists", () => {
-		const constants = new Constant("src/client/constants.json").add("WALK_SPEED", 16).add("DEBUG", false).build();
+		const constants = new Constant().add("WALK_SPEED", 16).add("DEBUG", false).build();
 
 		expect(constants.WALK_SPEED).toBe(16);
 		expect(constants.DEBUG).toBe(false);
 	});
 
-	test("path-based factory infers scope from persist path", () => {
-		const clientConstants = new Constant("src/client/constants.json").add("WALK_SPEED", 16);
-		const serverConstants = new Constant("src/server/constants.json").add("DEBUG", false);
+	test("constant uses configured scope and persist path", () => {
+		const constants = new Constant().add("WALK_SPEED", 16);
 
-		expect(clientConstants.getScope()).toBe("client");
-		expect(clientConstants.getPersistPath()).toBe("src/client/constants.json");
-		expect(serverConstants.getScope()).toBe("server");
-		expect(serverConstants.getPersistPath()).toBe("src/server/constants.json");
+		expect(constants.getScope()).toBe(RunService.IsClient() ? "client" : "server");
+		expect(constants.getPersistPath()).toBe(activePersistPath);
 	});
 
-
-
 	test("store can seed persisted values and defaults", () => {
-		const persisted: PersistedConstantFile = {
+		const persisted: PersistedConstantGroup = {
 			WALK_SPEED: 24,
 			_defaults: { WALK_SPEED: 16 },
 		};
 
-		const store = new ConstantStore("client", persisted, "src/client/constants.json").add("WALK_SPEED", 16);
+		const store = new ConstantStore("client", persisted, "src/client/constants.json", "game.TestScript").add("WALK_SPEED", 16);
 		const built = store.build();
 		const definition = store.getDefinitions().get("WALK_SPEED");
 
@@ -57,12 +55,12 @@ describe("Constant", () => {
 	});
 
 	test("store marks changed defaults as drifted", () => {
-		const persisted: PersistedConstantFile = {
+		const persisted: PersistedConstantGroup = {
 			WALK_SPEED: 24,
 			_defaults: { WALK_SPEED: 16 },
 		};
 
-		const store = new ConstantStore("client", persisted, "src/client/constants.json").add("WALK_SPEED", 20);
+		const store = new ConstantStore("client", persisted, "src/client/constants.json", "game.TestScript").add("WALK_SPEED", 20);
 		const definition = store.getDefinitions().get("WALK_SPEED");
 
 		expect(definition?.currentValue).toBe(24);
@@ -70,12 +68,12 @@ describe("Constant", () => {
 	});
 
 	test("store live updates override persisted values until reset", () => {
-		const persisted: PersistedConstantFile = {
+		const persisted: PersistedConstantGroup = {
 			WALK_SPEED: 24,
 			_defaults: { WALK_SPEED: 16 },
 		};
 
-		const store = new ConstantStore("client", persisted, "src/client/constants.json").add("WALK_SPEED", 16);
+		const store = new ConstantStore("client", persisted, "src/client/constants.json", "game.TestScript").add("WALK_SPEED", 16);
 		store.updateValue("WALK_SPEED", 32);
 		expect(store.build().WALK_SPEED).toBe(32);
 
@@ -84,7 +82,7 @@ describe("Constant", () => {
 	});
 
 	test("snapshot includes current values and defaults", () => {
-		const serverConstant = new Constant("src/server/constants.json").add("WALK_SPEED", 16).add("DEBUG", false);
+		const serverConstant = new Constant().add("WALK_SPEED", 16).add("DEBUG", false);
 		serverConstant.updateValue("WALK_SPEED", 30);
 		const snapshot = serverConstant.getPersistedSnapshot();
 
@@ -94,8 +92,8 @@ describe("Constant", () => {
 		expect(snapshot._defaults?.DEBUG).toBe(false);
 	});
 
-	test("duplicate constant definitions throw", () => {
-		const clientConstant = new Constant("src/client/constants.json").add("WALK_SPEED", 16);
+	test("duplicate constant definitions throw within the same source path", () => {
+		const clientConstant = new Constant().add("WALK_SPEED", 16);
 		expect(() => clientConstant.add("WALK_SPEED", 20)).toThrow();
 	});
 });
@@ -142,12 +140,13 @@ describe("serialization", () => {
 	});
 
 	test("creates bridge payloads from runtime values", () => {
-		const payload = createConstantUpdatePayload("client", "WALK_SPEED", 16, 12, "src/client/constants.json");
+		const payload = createConstantUpdatePayload("client", "WALK_SPEED", 16, 12, "game.TestScript", "src/client/constants.json");
 
 		expect(payload.scope).toBe("client");
 		expect(payload.name).toBe("WALK_SPEED");
 		expect(payload.serializedValue).toBe(16);
 		expect(payload.serializedDefault).toBe(12);
+		expect(payload.sourcePath).toBe("game.TestScript");
 		expect(payload.persistPath).toBe("src/client/constants.json");
 	});
 
@@ -160,7 +159,7 @@ describe("serialization", () => {
 			receivedValue = payload.serializedValue as number;
 		}, event);
 
-		createBindableEventSink(event).publish(createConstantUpdatePayload("client", "WALK_SPEED", 16, 12));
+		createBindableEventSink(event).publish(createConstantUpdatePayload("client", "WALK_SPEED", 16, 12, "game.TestScript"));
 
 		expect(receivedName).toBe("WALK_SPEED");
 		expect(receivedValue).toBe(16);

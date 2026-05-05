@@ -25,6 +25,7 @@
 		"@rbxts/jest": "catalog:",
 		"@rbxts/jest-globals": "catalog:",
 		"@lisachandra/types": "catalog:",
+		"@lisachandra/test": "catalog:",
 		"@lisachandra/core": "catalog:",
 		"@lisachandra/constant": "workspace:*"
 	}

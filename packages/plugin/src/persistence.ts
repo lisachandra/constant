@@ -15,6 +15,7 @@ export interface ConstantPluginUpdateRequest {
 	name: string;
 	serializedValue: unknown;
 	serializedDefault: unknown;
+	sourcePath: string;
 	persistPath?: string;
 }
 
@@ -22,9 +23,13 @@ export function resolveConstantsFilePath(request: ConstantPluginUpdateRequest): 
 	return request.persistPath ?? getConstantsFilePath(request.scope);
 }
 
-export interface PersistedConstantFile {
+export interface PersistedConstantGroup {
 	_defaults?: Record<string, SerializedConstant>;
 	[name: string]: SerializedConstant | Record<string, SerializedConstant> | undefined;
+}
+
+export interface PersistedConstantFile {
+	[sourcePath: string]: PersistedConstantGroup | undefined;
 }
 
 export function getConstantsFilePath(scope: ConstantScope): string {
@@ -35,8 +40,15 @@ export function applyConstantUpdate(
 	current: PersistedConstantFile,
 	request: ConstantPluginUpdateRequest,
 ): PersistedConstantFile {
-	const nextFile: PersistedConstantFile = { ...current, _defaults: { ...(current._defaults ?? {}) } };
-	nextFile[request.name] = request.serializedValue as SerializedConstant;
-	nextFile._defaults![request.name] = request.serializedDefault as SerializedConstant;
-	return nextFile;
+	const currentGroup = current[request.sourcePath] ?? {};
+	const nextGroup: PersistedConstantGroup = {
+		...currentGroup,
+		_defaults: { ...(currentGroup._defaults ?? {}) },
+	};
+	nextGroup[request.name] = request.serializedValue as SerializedConstant;
+	nextGroup._defaults![request.name] = request.serializedDefault as SerializedConstant;
+	return {
+		...current,
+		[request.sourcePath]: nextGroup,
+	};
 }

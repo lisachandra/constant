@@ -10,6 +10,7 @@ function isConstantPluginUpdateRequest(value: unknown): value is ConstantPluginU
 	return (
 		(request.scope === "client" || request.scope === "server") &&
 		typeIs(request.name, "string") &&
+		typeIs(request.sourcePath, "string") &&
 		"serializedValue" in request &&
 		"serializedDefault" in request
 	);

@@ -1,19 +1,19 @@
-import { Players, ReplicatedStorage } from "@rbxts/services";
+import { Players, ReplicatedStorage, RunService } from "@rbxts/services";
 import { createConstantUpdatePayload, type ConstantUpdateSink } from "./bridge";
 import {
 	getOrCreateReplicatedEditorEvent,
+	getOrCreateReplicationEvent,
 	isReplicatedEditorRegistrationPayload,
 	type ReplicatedEditorDefinitionPayload,
 	type ReplicatedEditorRegistrationPayload,
-} from "./editor-transport";
+} from "./transport";
 import { deserializeConstant, inferKind, serializeConstant, serializedEquals, tryReadSerializedValue } from "./serialize";
 import { createBindableEventSink } from "./transport";
 import { ConstantStore } from "./store";
 import type {
 	ConstantDefinition,
-	ConstantScope,
 	ConstantUpdatePayload,
-	PersistedConstantFile,
+	PersistedConstantGroup,
 	SerializedConstant,
 	SupportedPrimitive,
 } from "./types";
@@ -26,28 +26,18 @@ let automaticConstantReplicationOptions: AutomaticConstantReplicationOptions = {
 let automaticClientReplicationConnection: RBXScriptConnection | undefined;
 const automaticClientStores = new Map<string, ConstantStore<object>>();
 
-export const CONSTANT_REPLICATION_FOLDER_NAME = "constantReplication";
-export const CONSTANT_REPLICATION_REQUEST_EVENT_NAME = "constantReplication";
-export const CONSTANT_REPLICATION_UPDATE_EVENT_NAME = "constantReplication";
-
 export interface ConstantReplicationRequest extends ConstantUpdatePayload {}
 export interface ConstantReplicationUpdate extends ConstantUpdatePayload {}
 
 export interface ConstantReplicationServerOptions<T extends object = object> {
-	requestEvent?: RemoteEvent;
-	updateEvent?: RemoteEvent;
 	syncOnPlayerAdded?: boolean;
 	canEdit?: (player: Player, request: ConstantReplicationRequest, constant: ConstantStore<T>) => boolean;
 	onApprovedUpdate?: (player: Player, update: ConstantReplicationUpdate, constant: ConstantStore<T>) => void;
 }
 
-export interface ConstantReplicationClientOptions {
-	requestEvent?: RemoteEvent;
-	updateEvent?: RemoteEvent;
-}
-
 export function configureAutomaticConstantReplication(options: AutomaticConstantReplicationOptions = {}): void {
 	automaticConstantReplicationOptions = options;
+	ensureAutomaticClientReplicationRelay();
 }
 
 function getAutomaticCanEdit(
@@ -80,8 +70,8 @@ function deserializeSerializedValue(serialized: SerializedConstant): SupportedPr
 	return undefined;
 }
 
-function createPersistedFromRegistration(payload: ReplicatedEditorRegistrationPayload): PersistedConstantFile {
-	const persisted: PersistedConstantFile = { _defaults: {} };
+function createPersistedFromRegistration(payload: ReplicatedEditorRegistrationPayload): PersistedConstantGroup {
+	const persisted: PersistedConstantGroup = { _defaults: {} };
 	for (const definition of payload.definitions) {
 		persisted[definition.name] = definition.serializedCurrent;
 		persisted._defaults![definition.name] = definition.serializedDefault;
@@ -90,8 +80,7 @@ function createPersistedFromRegistration(payload: ReplicatedEditorRegistrationPa
 }
 
 function createStoreFromRegistration(payload: ReplicatedEditorRegistrationPayload): ConstantStore<object> {
-	const persistPath = payload.persistPath;
-	let store = new ConstantStore<object>(payload.scope, createPersistedFromRegistration(payload), persistPath, payload.sourcePath);
+	let store = new ConstantStore<object>(payload.scope, createPersistedFromRegistration(payload), payload.persistPath, payload.sourcePath);
 	for (const definition of payload.definitions) {
 		const defaultValue = deserializeSerializedValue(definition.serializedDefault);
 		store = store.add(definition.name, defaultValue);
@@ -105,7 +94,6 @@ function isReplicationBootstrapPayload(value: unknown): value is ReplicatedEdito
 	return payload.persistPath === undefined || typeIs(payload.persistPath, "string");
 }
 
-
 function publishConstantSnapshot<T extends object>(constant: ConstantStore<T>): void {
 	const sink = createBindableEventSink();
 	for (const [name, definition] of constant.getDefinitions()) {
@@ -115,24 +103,32 @@ function publishConstantSnapshot<T extends object>(constant: ConstantStore<T>): 
 				name,
 				definition.currentValue,
 				definition.defaultValue,
+				constant.getSourcePath(),
 				constant.getPersistPath(),
 			),
 		);
 	}
 }
 
-function ensureAutomaticClientReplicationRelay(): void {
-	if (!game.GetService("RunService").IsServer()) return;
-	if (automaticClientReplicationConnection) return;
+function getStoreKey(sourcePath: string, persistPath?: string): string {
+	return `${persistPath ?? ""}:${sourcePath}`;
+}
 
-	const requestEvent = getOrCreateReplicationRequestEvent();
-	const updateEvent = getOrCreateReplicationUpdateEvent();
+function ensureAutomaticClientReplicationRelay(): void {
+	if (!RunService.IsServer()) return;
+	if (automaticClientReplicationConnection) {
+		automaticClientReplicationConnection.Disconnect();
+		automaticClientReplicationConnection = undefined;
+	}
+
+	const requestEvent = getOrCreateReplicationEvent();
+	const updateEvent = getOrCreateReplicationEvent();
 	const editorEvent = getOrCreateReplicatedEditorEvent();
 	const persistSink = createBindableEventSink();
 	automaticClientReplicationConnection = requestEvent.OnServerEvent.Connect((player, payload) => {
 		if (isReplicationBootstrapPayload(payload)) {
 			const mirroredStore = createStoreFromRegistration(payload);
-			automaticClientStores.set(payload.id, mirroredStore);
+			automaticClientStores.set(getStoreKey(payload.sourcePath, payload.persistPath), mirroredStore);
 			editorEvent.FireAllClients(payload);
 			publishConstantSnapshot(mirroredStore);
 			for (const [name, definition] of mirroredStore.getDefinitions()) {
@@ -142,6 +138,7 @@ function ensureAutomaticClientReplicationRelay(): void {
 						name,
 						definition.currentValue,
 						definition.defaultValue,
+						mirroredStore.getSourcePath(),
 						mirroredStore.getPersistPath(),
 					),
 				);
@@ -153,25 +150,15 @@ function ensureAutomaticClientReplicationRelay(): void {
 		if (payload.scope !== "client") return;
 		if (!getAutomaticCanEdit(player, payload)) return;
 
-		const persistPath = payload.persistPath;
-		let mirroredStore: ConstantStore<object> | undefined;
-		if (persistPath !== undefined) {
-			for (const [, candidate] of automaticClientStores) {
-				if (candidate.getPersistPath() === persistPath) {
-					mirroredStore = candidate;
-					break;
-				}
-			}
-		}
-		if (mirroredStore) {
-			applyReplicationUpdate(mirroredStore, payload);
-		}
+		const mirroredStore = automaticClientStores.get(getStoreKey(payload.sourcePath, payload.persistPath));
+		if (!mirroredStore) return;
 
+		if (!getAutomaticCanEdit(player, payload, mirroredStore)) return;
+		applyReplicationUpdate(mirroredStore, payload);
 		persistSink.publish(payload);
 		updateEvent.FireAllClients(payload);
 	});
 }
-
 
 export interface ConstantReplicationServerHandle {
 	broadcastAll(player?: Player): void;
@@ -184,30 +171,13 @@ export interface ConstantReplicationClientHandle {
 	disconnect(): void;
 }
 
-function getOrCreateReplicationEvent(parent: Instance = ReplicatedStorage): RemoteEvent {
-	const existing = parent.FindFirstChild(CONSTANT_REPLICATION_REQUEST_EVENT_NAME);
-	if (existing?.IsA("RemoteEvent")) return existing;
-
-	const event = new Instance("RemoteEvent");
-	event.Name = CONSTANT_REPLICATION_REQUEST_EVENT_NAME;
-	event.Parent = parent;
-	return event;
-}
-
-export function getOrCreateReplicationRequestEvent(parent: Instance = ReplicatedStorage): RemoteEvent {
-	return getOrCreateReplicationEvent(parent);
-}
-
-export function getOrCreateReplicationUpdateEvent(parent: Instance = ReplicatedStorage): RemoteEvent {
-	return getOrCreateReplicationEvent(parent);
-}
-
 function isReplicationPayload(value: unknown): value is ConstantUpdatePayload {
 	if (!typeIs(value, "table")) return false;
 	const payload = value as Partial<ConstantUpdatePayload>;
 	return (
 		(payload.scope === "client" || payload.scope === "server") &&
 		typeIs(payload.name, "string") &&
+		typeIs(payload.sourcePath, "string") &&
 		("serializedValue" in payload) &&
 		("serializedDefault" in payload)
 	);
@@ -229,6 +199,8 @@ export function applyReplicationUpdate<T extends object>(
 	payload: ConstantReplicationUpdate,
 ): boolean {
 	if (payload.scope !== constant.getScope()) return false;
+	if (payload.sourcePath !== constant.getSourcePath()) return false;
+	if (payload.persistPath !== constant.getPersistPath()) return false;
 	const definition = constant.getDefinitions().get(payload.name);
 	if (!definition || !canApplySerializedValue(definition, payload.serializedValue)) return false;
 
@@ -255,7 +227,6 @@ function createReplicatedEditorRegistrationPayload<T extends object>(constant: C
 		persistPath: constant.getPersistPath(),
 		title: "Constants",
 		persistMode: constant.getScope() === "server" ? "auto" : "manual",
-		keyCodeName: "F8",
 		definitions,
 	};
 }
@@ -264,8 +235,8 @@ export function createConstantReplicationServer<T extends object>(
 	constant: ConstantStore<T>,
 	options: ConstantReplicationServerOptions<T> = {},
 ): ConstantReplicationServerHandle {
-	const requestEvent = options.requestEvent ?? getOrCreateReplicationRequestEvent();
-	const updateEvent = options.updateEvent ?? getOrCreateReplicationUpdateEvent();
+	const requestEvent = getOrCreateReplicationEvent();
+	const updateEvent = getOrCreateReplicationEvent();
 	const editorEvent = getOrCreateReplicatedEditorEvent();
 	const persistSink = createBindableEventSink();
 	ensureAutomaticClientReplicationRelay();
@@ -284,6 +255,7 @@ export function createConstantReplicationServer<T extends object>(
 				name,
 				definition.currentValue,
 				definition.defaultValue,
+				constant.getSourcePath(),
 				constant.getPersistPath(),
 			);
 			if (player) {
@@ -297,6 +269,8 @@ export function createConstantReplicationServer<T extends object>(
 	const requestConnection = requestEvent.OnServerEvent.Connect((player, payload) => {
 		if (!isReplicationPayload(payload)) return;
 		if (payload.scope !== constant.getScope()) return;
+		if (payload.sourcePath !== constant.getSourcePath()) return;
+		if (payload.persistPath !== constant.getPersistPath()) return;
 		if (
 			options.canEdit
 				? !options.canEdit(player, payload, constant)
@@ -311,6 +285,7 @@ export function createConstantReplicationServer<T extends object>(
 			payload.name,
 			approvedDefinition.currentValue,
 			approvedDefinition.defaultValue,
+			constant.getSourcePath(),
 			constant.getPersistPath(),
 		);
 		persistSink.publish(approvedPayload);
@@ -337,24 +312,43 @@ export function createConstantReplicationServer<T extends object>(
 }
 
 export function createConstantReplicationClient<T extends object>(
-	constant: ConstantStore<T>,
-	options: ConstantReplicationClientOptions = {},
+	constant: ConstantStore<T>
 ): ConstantReplicationClientHandle {
-	const requestEvent = options.requestEvent ?? getOrCreateReplicationRequestEvent();
-	const updateEvent = options.updateEvent ?? getOrCreateReplicationUpdateEvent();
+	const requestEvent = getOrCreateReplicationEvent();
+	const updateEvent = getOrCreateReplicationEvent();
 	const bootstrapPayload = createReplicatedEditorRegistrationPayload(constant);
+	const sendBootstrap = () => requestEvent.FireServer(bootstrapPayload);
+	let disconnected = false;
+	let bootstrapSynchronized = false;
 
 	const updateConnection = updateEvent.OnClientEvent.Connect((payload) => {
 		if (!isReplicationPayload(payload)) return;
+		if (
+			payload.scope === constant.getScope() &&
+			payload.persistPath === constant.getPersistPath() &&
+			payload.sourcePath === constant.getSourcePath()
+		) {
+			bootstrapSynchronized = true;
+		}
 		applyReplicationUpdate(constant, payload);
 	});
 
-	requestEvent.FireServer(bootstrapPayload);
+	task.spawn(() => {
+		for (let attempt = 0; attempt < 10; attempt++) {
+			if (disconnected || bootstrapSynchronized) return;
+			sendBootstrap();
+			task.wait(0.5);
+		}
+	});
+
+	sendBootstrap();
 
 	return {
 		requestUpdate(request) {
 			if (!isReplicationPayload(request)) return;
 			if (request.scope !== constant.getScope()) return;
+			if (request.sourcePath !== constant.getSourcePath()) return;
+			if (request.persistPath !== constant.getPersistPath()) return;
 			requestEvent.FireServer(request);
 		},
 		createRequestSink() {
@@ -366,6 +360,7 @@ export function createConstantReplicationClient<T extends object>(
 			};
 		},
 		disconnect() {
+			disconnected = true;
 			updateConnection.Disconnect();
 		},
 	};

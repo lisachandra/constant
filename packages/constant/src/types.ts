@@ -42,16 +42,23 @@ export type SerializedConstant =
 	| { type: "CFrame"; value: [number, number, number, number, number, number, number, number, number, number, number, number] }
 	| { type: "EnumItem"; enum: string; item: string };
 
-export interface PersistedConstantFile {
+export interface PersistedConstantGroup {
 	_defaults?: Record<string, SerializedConstant>;
 	[name: string]: SerializedConstant | Record<string, SerializedConstant> | undefined;
 }
+
+export interface PersistedConstantFile {
+	[sourcePath: string]: PersistedConstantGroup | undefined;
+}
+
+export type ConfiguredConstantModule = PersistedConstantFile;
 
 export interface ConstantUpdatePayload {
 	scope: ConstantScope;
 	name: string;
 	serializedValue: SerializedConstant;
 	serializedDefault: SerializedConstant;
+	sourcePath: string;
 	persistPath?: string;
 }
 

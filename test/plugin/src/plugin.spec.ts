@@ -8,6 +8,9 @@ import {
 	getOrCreatePluginTransportEvent,
 	isConstantPluginUpdateRequest,
 	resolveConstantsFilePath,
+	createIoServeWriter,
+	encodePersistedConstantFile,
+	CONSTANT_TRANSPORT_EVENT_NAME,
 } from "@lisachandra/plugin";
 
 describe("plugin bridge", () => {
@@ -18,6 +21,7 @@ describe("plugin bridge", () => {
 				name: "WALK_SPEED",
 				serializedValue: 16,
 				serializedDefault: 12,
+				sourcePath: "src/test/config.ts",
 			}),
 		).toBe(true);
 
@@ -27,6 +31,7 @@ describe("plugin bridge", () => {
 				name: "WALK_SPEED",
 				serializedValue: 16,
 				serializedDefault: 12,
+				sourcePath: "src/test/config.ts",
 			}),
 		).toBe(false);
 	});
@@ -52,27 +57,32 @@ describe("plugin bridge", () => {
 			name: "WALK_SPEED",
 			serializedValue: 24,
 			serializedDefault: 16,
+			sourcePath: "src/client/main.ts",
 			persistPath: "custom/client/constants.json",
-			})).toBe("custom/client/constants.json");
+		})).toBe("custom/client/constants.json");
 	});
 
 	test("applies updates into flat persisted files", () => {
+		const sourcePath = "src/server/game.ts";
 		const nextFile = applyConstantUpdate(
 			{
-				DEBUG: false,
-				_defaults: { DEBUG: false },
+				[sourcePath]: {
+					DEBUG: false,
+					_defaults: { DEBUG: false },
+				},
 			},
 			{
 				scope: "server",
 				name: "WALK_SPEED",
 				serializedValue: 24,
 				serializedDefault: 16,
+				sourcePath,
 			},
 		);
 
-		expect(nextFile.DEBUG).toBe(false);
-		expect(nextFile.WALK_SPEED).toBe(24);
-		expect(nextFile._defaults?.WALK_SPEED).toBe(16);
+		expect(nextFile[sourcePath]!.DEBUG).toBe(false);
+		expect(nextFile[sourcePath]!.WALK_SPEED).toBe(24);
+		expect(nextFile[sourcePath]!._defaults?.WALK_SPEED).toBe(16);
 	});
 
 	test("forwards valid requests", () => {
@@ -86,6 +96,7 @@ describe("plugin bridge", () => {
 			name: "DEBUG",
 			serializedValue: true,
 			serializedDefault: false,
+			sourcePath: "src/server/game.ts",
 		});
 
 		expect(receivedName).toBe("DEBUG");
@@ -103,6 +114,7 @@ describe("plugin bridge", () => {
 			name: "WALK_SPEED",
 			serializedValue: 20,
 			serializedDefault: 16,
+			sourcePath: "src/server/game.ts",
 		});
 
 		expect(receivedName).toBe("WALK_SPEED");
@@ -113,12 +125,68 @@ describe("plugin bridge", () => {
 		const folder = new Instance("Folder");
 		const event = getOrCreatePluginTransportEvent(folder);
 
-		expect(event.Name).toBe("PersistRequested");
-		expect(event.Parent?.Name).toBe("constant");
+		expect(event.Name).toBe("constant");
+		expect(event.Parent).toBe(folder);
 	});
 
 	test("throws on invalid requests", () => {
 		const bridge = createPluginBridge(() => undefined);
 		expect(() => bridge.forwardUpdate({ scope: "broken" } as never)).toThrow();
+	});
+});
+
+
+describe("writer", () => {
+	test("createIoServeWriter builds correct write request shape", () => {
+		const requests = new Array<{ path: string; body: string }>();
+		const writer = createIoServeWriter((req) => requests.push(req));
+		writer.write("custom/path.json", { "src/test.ts": { FOO: 1, _defaults: { FOO: 0 } } });
+		expect(requests.size()).toBe(1);
+		expect(requests[0]!.path).toBe("custom/path.json");
+		expect(requests[0]!.body).toContain("FOO");
+		expect(requests[0]!.body).toContain("_defaults");
+		expect(requests[0]!.body).toContain("src/test.ts");
+	});
+
+	test("encodePersistedConstantFile produces valid JSON", () => {
+		const json = encodePersistedConstantFile({ "src/test.ts": { FOO: 1, _defaults: { FOO: 0 } } });
+		expect(json).toContain("FOO");
+		expect(json).toContain("_defaults");
+		expect(json).toContain("src/test.ts");
+	});
+});
+
+describe("persistence internals", () => {
+	test("applyConstantUpdate merges multiple source paths", () => {
+		const file: Record<string, unknown> = {};
+		const r1 = { scope: "client" as const, name: "FOO", serializedValue: 10, serializedDefault: 0, sourcePath: "a.ts" };
+		const r2 = { scope: "client" as const, name: "BAR", serializedValue: 20, serializedDefault: 5, sourcePath: "b.ts" };
+		const updated = applyConstantUpdate(applyConstantUpdate(file as never, r1), r2);
+		expect((updated["a.ts"] as Record<string, unknown>).FOO).toBe(10);
+		expect((updated["b.ts"] as Record<string, unknown>).BAR).toBe(20);
+	});
+
+	test("isConstantPluginUpdateRequest rejects payloads missing sourcePath", () => {
+		expect(
+			isConstantPluginUpdateRequest({
+				scope: "client",
+				name: "WALK_SPEED",
+				serializedValue: 16,
+				serializedDefault: 12,
+			}),
+		).toBe(false);
+	});
+
+	test("CONSTANT_TRANSPORT_EVENT_NAME matches getOrCreatePluginTransportEvent name", () => {
+		const folder = new Instance("Folder");
+		const event = getOrCreatePluginTransportEvent(folder);
+		expect(event.Name).toBe(CONSTANT_TRANSPORT_EVENT_NAME);
+	});
+
+	test("getOrCreatePluginTransportEvent reuses existing event", () => {
+		const folder = new Instance("Folder");
+		const first = getOrCreatePluginTransportEvent(folder);
+		const second = getOrCreatePluginTransportEvent(folder);
+		expect(first).toBe(second);
 	});
 });

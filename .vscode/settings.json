@@ -39,7 +39,6 @@
 		"source.organizeImports": "never"
 	},
 	// npm
-	"npm.exclude": "**/rojo-sync/**",
 	"npm.packageManager": "pnpm",
 	// Mise Tools settings
 	"mise.configureExtensionsUseSymLinks": true,
@@ -53,7 +52,6 @@
 		"**/.DS_Store": true,
 		"**/Thumbs.db": true,
 		"!**/node_modules/@rbxts": true,
-		"!**/node_modules/@rbxts-js": true,
-		"**/.env*": true
+		"!**/node_modules/@rbxts-js": true
 	},
 }

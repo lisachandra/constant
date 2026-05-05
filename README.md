@@ -3,55 +3,96 @@
 Strongly-typed, chainable runtime constants for `roblox-ts` with Studio live editing, JSON persistence, and a plugin bridge for `io-serve`.
 
 ## Packages
-- `@lisachandra/constant` — runtime constants, serialization, Iris editor, transport helpers
+
+- `@lisachandra/constant` — runtime constants, serialization, Iris editor, transport helpers, remote replication
 - `@lisachandra/plugin` — Studio bridge, persistence coordinator, `io-serve` writers
-- `@lisachandra/test-constant` — runtime test place and example editor wiring
+- `@lisachandra/test-constant` — runtime test place and example wiring
 - `@lisachandra/test-plugin` — plugin-side tests and bootstrap wiring
 
 ## What it does
+
 `constant` resolves values through a priority chain:
+
 1. live in-memory edits
-2. persisted JSON values
+2. persisted JSON values (nested by source path)
 3. script defaults
 
 It gives you:
+
 - typed chained `.add()` inference
 - client/server scope separation
 - Studio-only live editing through `@rbxts/iris`
 - manual preview mode or auto-persist mode
-- plugin-side debounced persistence pipeline
+- plugin-side debounced persistence pipeline with `io-serve`
+- remote replication for server-authoritative persistence
+
+## Setup
+
+Before creating any constants, configure the persistence file for the current scope:
+
+```ts
+import { configureConstant } from "@lisachandra/constant";
+
+// Client scope
+configureConstant("src/client/constants.json", import("./constants.json").expect() as never);
+
+// Server scope (in a server script)
+configureConstant("src/server/constants.json", import("./server/constants.json").expect() as never);
+```
+
+To bind the Iris editor hotkey (client only), pass editor options as a third argument:
+
+```ts
+configureConstant("src/client/constants.json", import("./constants.json").expect() as never, {
+	keyCode: Enum.KeyCode.F8,
+	title: "Client Constants",
+});
+```
 
 ## Runtime usage
+
 ```ts
 import { Constant } from "@lisachandra/constant";
 
-const clientConstants = new Constant("client")
+const clientConstants = new Constant()
 	.add("WALK_SPEED", 16)
 	.add("DEBUG_RAYCASTS", false)
 	.add("THEME_COLOR", Color3.fromRGB(255, 0, 0));
 
-const built = clientConstants.build();
-print(built.WALK_SPEED);
+const c = clientConstants.build();
+print(c.WALK_SPEED);
 ```
 
 ## Persisted files
+
 Expected JSON files:
+
 - `src/client/constants.json`
 - `src/server/constants.json`
 
-Example shape:
+Values are nested by source path so multiple scripts can contribute to the same file independently:
+
 ```json
 {
-  "WALK_SPEED": 16,
-  "DEBUG_RAYCASTS": false,
-  "_defaults": {
+  "src/client/main.client.ts": {
     "WALK_SPEED": 16,
-    "DEBUG_RAYCASTS": false
+    "_defaults": {
+      "WALK_SPEED": 16
+    }
+  },
+  "src/client/folder/second.client.ts": {
+    "DEBUG_RAYCASTS": true,
+    "THEME_COLOR": { "type": "Color3", "value": [0, 0.667, 1] },
+    "_defaults": {
+      "DEBUG_RAYCASTS": true,
+      "THEME_COLOR": { "type": "Color3", "value": [0, 0.667, 1] }
+    }
   }
 }
 ```
 
-Tagged Roblox values are stored as objects, for example:
+Tagged Roblox values are stored as objects:
+
 ```json
 {
   "THEME_COLOR": { "type": "Color3", "value": [1, 0, 0] },
@@ -60,41 +101,43 @@ Tagged Roblox values are stored as objects, for example:
 ```
 
 ## Iris editor
+
 The runtime package uses the actual `@rbxts/iris` APIs:
-- `Iris.SliderNum`
+
+- `Iris.DragNum` / `Iris.SliderNum`
 - `Iris.InputNum`
 - `Iris.Checkbox`
 - `Iris.InputText`
-- `Iris.InputColor3`
-- `Iris.InputVector3`
+- `Iris.DragVector3`
+- `Iris.ColorEdit3`
 
 Editor modes:
+
 - `manual` — edits are preview-only until saved
 - `auto` — edits emit persist-intent payloads immediately
 
-Example:
 ```ts
 import { Constant, createBindableEventSink } from "@lisachandra/constant";
 
-const persistSink = createBindableEventSink();
-
-const constants = new Constant("server")
+const constants = new Constant()
 	.add("WALK_SPEED", 16)
 	.add("DEBUG_RAYCASTS", false);
 
 constants.mountEditor({
 	title: "Server Constants",
 	persistMode: "manual",
-	onPersist: (payload) => persistSink.publish(payload),
 });
 ```
 
 ## Transport
+
 Persist-intent updates are sent through a shared `BindableEvent`:
+
 - folder: `ReplicatedStorage/constant`
-- event: `PersistRequested`
+- event: `constant`
 
 Runtime helpers:
+
 ```ts
 import {
 	createBindableEventSink,
@@ -104,6 +147,7 @@ import {
 ```
 
 Plugin helpers:
+
 ```ts
 import {
 	connectPluginTransport,
@@ -111,16 +155,34 @@ import {
 } from "@lisachandra/plugin";
 ```
 
+## Remote replication
+
+Server-authoritative update pipeline — client editors send update requests to the server, which validates, applies, and broadcasts the approved state back to all clients.
+
+```ts
+import { configureAutomaticConstantReplication } from "@lisachandra/constant";
+
+configureAutomaticConstantReplication({
+	canEdit: (player, request) => {
+		// Only allow edits from specific players
+		return true;
+	},
+});
+```
+
 ## Plugin pipeline
-The plugin package currently provides these layers:
+
+The plugin package provides these layers:
+
 - `transport.ts` — receive runtime payloads
-- `persistence.ts` — apply flat updates and map scope to JSON path
+- `persistence.ts` — apply sourcePath-nested updates and map scope to JSON path
 - `service.ts` — keep per-scope snapshots in memory
 - `coordinator.ts` — subscribe, accumulate, debounce, flush
 - `writer.ts` — encode JSON and send through `io-serve`
 - `bootstrap.ts` — create the HTTP writer and start the coordinator
 
 Bootstrap example:
+
 ```ts
 import { startConstantPluginBootstrap } from "@lisachandra/plugin";
 
@@ -129,32 +191,3 @@ const pluginBootstrap = startConstantPluginBootstrap({
 	autoFlush: true,
 });
 ```
-
-## Test-place wiring
-Current sample wiring lives in:
-- `test/constant/src/index.ts`
-- `test/plugin/src/index.ts`
-
-These show:
-- mounted client/server editors
-- bindable persistence publishing
-- plugin bootstrap startup
-
-## Current status
-Implemented:
-- typed builder API
-- serialization/deserialization helpers
-- drift detection through `_defaults`
-- manual and auto persist editor modes
-- bindable transport
-- plugin persistence coordinator and writer abstractions
-- sample JSON files and test-place wiring
-
-Not fully finished yet:
-- runtime loading from `src/client/constants.json` and `src/server/constants.json`
-- confirmed final `io-serve` HTTP contract
-- real Studio plugin packaging/bootstrap entry beyond the current module bootstrap
-
-## Spec
-Full design/spec:
-- `docs/superpowers/specs/2026-04-29-constant-design.md`

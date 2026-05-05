@@ -22,6 +22,7 @@
 	},
 	"dependencies": {
 		"@lisachandra/types": "catalog:",
+		"@lisachandra/test": "catalog:",
 		"@lisachandra/core": "catalog:",
 		"@lisachandra/constant": "workspace:*",
 		"@lisachandra/plugin": "workspace:*",

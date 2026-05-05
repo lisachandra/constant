@@ -5,9 +5,8 @@ import { createConstantReplicationClient } from "./replication";
 import {
 	getOrCreateReplicatedEditorEvent,
 	isReplicatedEditorRegistrationPayload,
-	type ReplicatedEditorDefinitionPayload,
 	type ReplicatedEditorRegistrationPayload,
-} from "./editor-transport";
+} from "./transport";
 import { formatValue, serializeConstant, serializedEquals } from "./serialize";
 import { ConstantStore } from "./store";
 import type {
@@ -51,7 +50,6 @@ let sharedDisconnect: (() => void) | undefined;
 let replicatedClientListenerInstalled = false;
 const registeredEditors = new Map<string, RegisteredEditor>();
 const replicatedClientEditors = new Map<string, ReplicatedClientEditor>();
-const replicatedEditorIds = new Set<string>();
 
 function ensureIrisInitialized(): void {
 	if (irisInitialized) return;
@@ -88,8 +86,8 @@ function syncState<T extends SupportedPrimitive>(state: Iris.State<T>, value: T)
 	}
 }
 
-function getScriptPathLabel(path: string): string {
-	return path.gsub("^game%.", "")[0]
+function getEditorSourceLabel(path: string): string {
+	return path.gsub("^game%.", "")[0];
 }
 
 function getEditorTitle(editors: RegisteredEditor[]): string {
@@ -103,16 +101,20 @@ function ensureSharedEditorMounted(): void {
 	ensureIrisInitialized();
 	const windowSize = Iris.State(new Vector2(420, 520));
 	sharedDisconnect = Iris.Connect(() => {
-		const editors = new Array<RegisteredEditor>();
+		const serverEditors = new Array<RegisteredEditor>();
+		const clientEditors = new Array<RegisteredEditor>();
 		for (const [, editor] of registeredEditors) {
-			editors.push(editor);
+			if (editor.store.getScope() === "server") {
+				serverEditors.push(editor);
+			} else {
+				clientEditors.push(editor);
+			}
 		}
-		if (editors.size() === 0) return;
+		if (serverEditors.size() === 0 && clientEditors.size() === 0) return;
 
-		Iris.Window([getEditorTitle(editors)], { size: windowSize });
-		for (const editor of editors) {
-			renderEditorGroup(editor);
-		}
+		Iris.Window([getEditorTitle([...serverEditors, ...clientEditors])], { size: windowSize });
+		if (serverEditors.size() > 0) renderEditorScope("server", serverEditors);
+		if (clientEditors.size() > 0) renderEditorScope("client", clientEditors);
 		Iris.End();
 	});
 }
@@ -123,12 +125,17 @@ function teardownSharedEditorIfEmpty(): void {
 	sharedDisconnect = undefined;
 }
 
-function renderEditorGroup(editor: RegisteredEditor): void {
-	const scopeLabel = editor.store.getScope();
-	const scriptPathLabel = getScriptPathLabel(editor.path);
-
+function renderEditorScope(scopeLabel: string, editors: RegisteredEditor[]): void {
 	Iris.Tree([scopeLabel]);
-	Iris.Tree([scriptPathLabel]);
+	for (const editor of editors) {
+		renderEditorGroup(editor);
+	}
+	Iris.End();
+}
+
+function renderEditorGroup(editor: RegisteredEditor): void {
+	Iris.Separator();
+	Iris.Tree([`${getEditorSourceLabel(editor.path)}`]);
 
 	const persistMode = editor.options.persistMode ?? "manual";
 	Iris.Text([`Persist mode: ${persistMode}`]);
@@ -185,7 +192,6 @@ function renderEditorGroup(editor: RegisteredEditor): void {
 	}
 
 	Iris.End();
-	Iris.End();
 }
 
 function deserializeSerializedValue(serialized: SerializedConstant): SupportedPrimitive {
@@ -211,8 +217,9 @@ function deserializeSerializedValue(serialized: SerializedConstant): SupportedPr
 }
 
 function createPersistedFromRegistration(payload: ReplicatedEditorRegistrationPayload) {
-	const persisted: { _defaults: Record<string, SerializedConstant>; [name: string]: SerializedConstant | Record<string, SerializedConstant> } = {
-		_defaults: {},
+	const persisted = { _defaults: {} as Record<string, SerializedConstant> } as {
+		_defaults: Record<string, SerializedConstant>;
+		[name: string]: SerializedConstant | Record<string, SerializedConstant>;
 	};
 	for (const definition of payload.definitions) {
 		persisted[definition.name] = definition.serializedCurrent;
@@ -232,7 +239,6 @@ function ensureReplicatedClientEditorListenerInstalled(): void {
 	getOrCreateReplicatedEditorEvent().OnClientEvent.Connect((payload) => {
 		if (!isReplicatedEditorRegistrationPayload(payload)) return;
 		if (replicatedClientEditors.has(payload.id)) return;
-		replicatedEditorIds.add(payload.id);
 
 		let mirrorStore = new ConstantStore<object>(
 			payload.scope,
@@ -246,7 +252,7 @@ function ensureReplicatedClientEditorListenerInstalled(): void {
 		}
 
 		const replication = createConstantReplicationClient(mirrorStore);
-		const keyCode = getKeyCodeByName(payload.keyCodeName);
+		const keyCode = getKeyCodeByName(payload.keyCodeName ?? "");
 		const disconnectHotkey = keyCode
 			? bindConstantEditorHotkey(mirrorStore, keyCode, {
 					title: payload.title,
@@ -266,8 +272,8 @@ function ensureReplicatedClientEditorListenerInstalled(): void {
 export function mountConstantEditor<T extends object>(store: ConstantStore<T>, options: ConstantEditorOptions = {}): () => void {
 	ensureReplicatedClientEditorListenerInstalled();
 
-	const editorId = `${store.getScope()}:${store.getPersistPath()}:${store.getSourcePath()}`
-	const resolvedStore = replicatedClientEditors.get(editorId)?.store ?? store
+	const editorId = `${store.getScope()}:${store.getPersistPath()}:${store.getSourcePath()}`;
+	const resolvedStore = replicatedClientEditors.get(editorId)?.store ?? store;
 
 	registeredEditors.set(editorId, {
 		id: editorId,
@@ -328,7 +334,7 @@ function emitPersist(
 	defaultValue: SupportedPrimitive,
 	onPersist?: (payload: ConstantUpdatePayload) => void,
 ): void {
-	onPersist?.(createConstantUpdatePayload(store.getScope(), name, value, defaultValue, store.getPersistPath()));
+	onPersist?.(createConstantUpdatePayload(store.getScope(), name, value, defaultValue, store.getSourcePath(), store.getPersistPath()));
 }
 
 function commitEditorValue<T extends object>(
@@ -377,7 +383,10 @@ function syncWidgetState(key: string, definition: ConstantDefinition, states: Ed
 	if (definition.kind === "Color3") {
 		syncState(getOrCreateState(states.colors, key, definition.currentValue as Color3), definition.currentValue as Color3);
 		const color = definition.currentValue as Color3;
-		syncState(getOrCreateState(states.colorVectors, key, new Vector3(color.R, color.G, color.B)), new Vector3(color.R, color.G, color.B));
+		syncState(
+			getOrCreateState(states.colorVectors, key, new Vector3(color.R * 255, color.G * 255, color.B * 255)),
+			new Vector3(color.R * 255, color.G * 255, color.B * 255),
+		);
 		return;
 	}
 
@@ -438,14 +447,30 @@ function renderWidget<T extends object>(
 	}
 
 	if (definition.kind === "Color3") {
-		const colorState = getOrCreateState(widgetStates.colorVectors, widgetKey, new Vector3());
+		const currentColor = definition.currentValue as Color3;
+		const colorState = getOrCreateState(
+			widgetStates.colorVectors,
+			widgetKey,
+			new Vector3(currentColor.R * 255, currentColor.G * 255, currentColor.B * 255),
+		);
 		const input = Iris.DragVector3(
-			[definition.name, new Vector3(numberOptions.numberStep, numberOptions.numberStep, numberOptions.numberStep), new Vector3(0, 0, 0), new Vector3(1, 1, 1)],
+			[
+				definition.name,
+				new Vector3(numberOptions.numberStep, numberOptions.numberStep, numberOptions.numberStep),
+				new Vector3(0, 0, 0),
+				new Vector3(255, 255, 255),
+			],
 			{ number: colorState },
 		);
 		if (input.numberChanged()) {
 			const nextValue = input.state.number.value;
-			commitEditorValue(store, definition.name, new Color3(nextValue.X, nextValue.Y, nextValue.Z), state, onPersist);
+			commitEditorValue(
+				store,
+				definition.name,
+				Color3.fromRGB(math.round(nextValue.X), math.round(nextValue.Y), math.round(nextValue.Z)),
+				state,
+				onPersist,
+			);
 		}
 		return;
 	}
@@ -486,5 +511,5 @@ function renderWidget<T extends object>(
 }
 
 if (RunService.IsClient()) {
-	task.defer(ensureReplicatedClientEditorListenerInstalled);
+	ensureReplicatedClientEditorListenerInstalled();
 }

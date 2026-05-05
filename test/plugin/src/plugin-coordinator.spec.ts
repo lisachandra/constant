@@ -19,10 +19,11 @@ describe("plugin coordinator", () => {
 			name: "WALK_SPEED",
 			serializedValue: 24,
 			serializedDefault: 16,
+            sourcePath: "src/client/constants.config.ts",
 		});
 
 		const snapshot = coordinator.service.getSnapshot("client");
-		expect(snapshot.WALK_SPEED).toBe(24);
+		expect(snapshot["src/client/constants.config.ts"]!.WALK_SPEED).toBe(24);
 		expect(writes.size()).toBe(1);
 		expect(writes[0]!.path).toBe("src/client/constants.json");
 		coordinator.disconnect();
@@ -45,9 +46,10 @@ describe("plugin coordinator", () => {
 			name: "DEBUG",
 			serializedValue: true,
 			serializedDefault: false,
+            sourcePath: "src/server/constants.config.ts",
 		});
 
-		expect(coordinator.service.getSnapshot("server").DEBUG).toBe(true);
+		expect(coordinator.service.getSnapshot("server")["src/server/constants.config.ts"]!.DEBUG).toBe(true);
 		expect(writes.size()).toBe(0);
 
 		coordinator.flushAll();
