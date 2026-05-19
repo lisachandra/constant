@@ -51,6 +51,7 @@
 		"**/.hg": true,
 		"**/.DS_Store": true,
 		"**/Thumbs.db": true,
+		"**/workspace-links": true,
 		"!**/node_modules/@rbxts": true,
 		"!**/node_modules/@rbxts-js": true
 	},
