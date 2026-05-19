@@ -1,8 +1,7 @@
 import { ReplicatedStorage } from "@rbxts/services";
 import type { ConstantPluginUpdateRequest } from ".";
 
-export const CONSTANT_TRANSPORT_FOLDER_NAME = "constant";
-export const CONSTANT_TRANSPORT_EVENT_NAME = "constant";
+export const CONSTANT_TRANSPORT_EVENT_NAME = "Constant"
 
 function isConstantPluginUpdateRequest(value: unknown): value is ConstantPluginUpdateRequest {
 	if (!typeIs(value, "table")) return false;
@@ -16,19 +15,13 @@ function isConstantPluginUpdateRequest(value: unknown): value is ConstantPluginU
 	);
 }
 
-export function getOrCreatePluginTransportEvent(parent: Instance = ReplicatedStorage): BindableEvent {
-	const existing = parent.FindFirstChild(CONSTANT_TRANSPORT_EVENT_NAME);
-	if (existing?.IsA("BindableEvent")) return existing;
-
-	const event = new Instance("BindableEvent");
-	event.Name = CONSTANT_TRANSPORT_EVENT_NAME;
-	event.Parent = parent;
-	return event;
+export function getPluginTransportEvent(parent: Instance = ReplicatedStorage): BindableEvent {
+	return parent.WaitForChild<BindableEvent>(CONSTANT_TRANSPORT_EVENT_NAME);
 }
 
 export function connectPluginTransport(
 	callback: (request: ConstantPluginUpdateRequest) => void,
-	event: BindableEvent = getOrCreatePluginTransportEvent(),
+	event: BindableEvent = getPluginTransportEvent(),
 ): RBXScriptConnection {
 	return event.Event.Connect((payload) => {
 		if (!isConstantPluginUpdateRequest(payload)) return;

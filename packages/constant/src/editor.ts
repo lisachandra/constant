@@ -148,6 +148,22 @@ function renderEditorGroup(editor: RegisteredEditor): void {
 		}
 	}
 
+	const driftedDefinitions = new Array<[string, ConstantDefinition]>();
+	for (const [name, definition] of editor.store.getDefinitions()) {
+		if (!definition.defaultDrifted) continue;
+		driftedDefinitions.push([name, definition]);
+	}
+
+	if (driftedDefinitions.size() > 0 && Iris.Button(["Reapply All Drifted Defaults"]).clicked()) {
+		const reappliedNames = editor.store.reapplyDriftedDefaults();
+		for (const name of reappliedNames) {
+			const reappliedDefinition = editor.store.getDefinitions().get(name);
+			if (!reappliedDefinition) continue;
+			finalizeEditorValue(editor.store, name, { persistMode, dirtyNames: editor.dirtyNames }, editor.options.onPersist);
+			syncWidgetState(`${editor.id}:${name}`, reappliedDefinition, editor.states);
+		}
+	}
+
 	for (const [name, definition] of editor.store.getDefinitions()) {
 		Iris.PushId(`${editor.id}:${name}`);
 		Iris.Text([`${name} (${definition.kind})`]);
@@ -160,8 +176,8 @@ function renderEditorGroup(editor: RegisteredEditor): void {
 				definition,
 				{
 					numberStep: editor.options.numberStep ?? 0.1,
-					numberMin: editor.options.numberMin ?? 0,
-					numberMax: editor.options.numberMax ?? 100,
+					numberMin: editor.options.numberMin ?? -1_000_000,
+					numberMax: editor.options.numberMax ?? 1_000_000,
 				},
 				{ persistMode, dirtyNames: editor.dirtyNames },
 				editor.states,
@@ -169,6 +185,13 @@ function renderEditorGroup(editor: RegisteredEditor): void {
 			);
 		} else {
 			Iris.Text(["editing disabled"]);
+		}
+
+		if (definition.defaultDrifted && Iris.Button([`Reapply Default ${name}`]).clicked()) {
+			editor.store.reapplyDefault(name as never);
+			finalizeEditorValue(editor.store, name, { persistMode, dirtyNames: editor.dirtyNames }, editor.options.onPersist);
+			const reappliedDefinition = editor.store.getDefinitions().get(name)!;
+			syncWidgetState(`${editor.id}:${name}`, reappliedDefinition, editor.states);
 		}
 
 		if (persistMode === "manual" && editor.dirtyNames.has(name) && Iris.Button([`Save ${name}`]).clicked()) {
@@ -337,14 +360,12 @@ function emitPersist(
 	onPersist?.(createConstantUpdatePayload(store.getScope(), name, value, defaultValue, store.getSourcePath(), store.getPersistPath()));
 }
 
-function commitEditorValue<T extends object>(
+function finalizeEditorValue<T extends object>(
 	store: ConstantStore<T>,
 	name: string,
-	value: SupportedPrimitive,
 	state: { persistMode: ConstantPersistMode; dirtyNames: Set<string> },
 	onPersist?: (payload: ConstantUpdatePayload) => void,
 ): void {
-	store.updateValue(name as keyof T & string, value as T[keyof T & string] & SupportedPrimitive);
 	const definition = store.getDefinitions().get(name);
 	if (!definition) return;
 
@@ -354,6 +375,17 @@ function commitEditorValue<T extends object>(
 	} else {
 		state.dirtyNames.add(name);
 	}
+}
+
+function commitEditorValue<T extends object>(
+	store: ConstantStore<T>,
+	name: string,
+	value: SupportedPrimitive,
+	state: { persistMode: ConstantPersistMode; dirtyNames: Set<string> },
+	onPersist?: (payload: ConstantUpdatePayload) => void,
+): void {
+	store.updateValue(name as keyof T & string, value as T[keyof T & string] & SupportedPrimitive);
+	finalizeEditorValue(store, name, state, onPersist);
 }
 
 function syncWidgetState(key: string, definition: ConstantDefinition, states: EditorWidgetStates): void {

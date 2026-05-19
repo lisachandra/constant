@@ -67,6 +67,54 @@ describe("Constant", () => {
 		expect(definition?.defaultDrifted).toBe(true);
 	});
 
+	test("store adopts new defaults when persisted value still matches the old default", () => {
+		const persisted: PersistedConstantGroup = {
+			WALK_SPEED: 16,
+			_defaults: { WALK_SPEED: 16 },
+		};
+
+		const store = new ConstantStore("client", persisted, "src/client/constants.json", "game.TestScript").add("WALK_SPEED", 20);
+		const definition = store.getDefinitions().get("WALK_SPEED");
+
+		expect(store.build().WALK_SPEED).toBe(20);
+		expect(definition?.persistedValue).toBe(20);
+		expect(definition?.defaultDrifted).toBe(true);
+	});
+
+	test("reapplyDefault promotes the current script default as a live override", () => {
+		const persisted: PersistedConstantGroup = {
+			WALK_SPEED: 24,
+			_defaults: { WALK_SPEED: 16 },
+		};
+
+		const store = new ConstantStore("client", persisted, "src/client/constants.json", "game.TestScript").add("WALK_SPEED", 20);
+		store.reapplyDefault("WALK_SPEED");
+		const definition = store.getDefinitions().get("WALK_SPEED");
+
+		expect(store.build().WALK_SPEED).toBe(20);
+		expect(definition?.hasLiveOverride).toBe(true);
+		store.resetValue("WALK_SPEED");
+		expect(store.build().WALK_SPEED).toBe(24);
+	});
+
+	test("reapplyDriftedDefaults updates only drifted constants", () => {
+		const persisted: PersistedConstantGroup = {
+			WALK_SPEED: 16,
+			DEBUG: false,
+			_defaults: { WALK_SPEED: 16, DEBUG: false },
+		};
+
+		const store = new ConstantStore("client", persisted, "src/client/constants.json", "game.TestScript")
+			.add("WALK_SPEED", 20)
+			.add("DEBUG", false);
+
+		expect(store.reapplyDriftedDefaults()).toEqual(["WALK_SPEED"]);
+		expect(store.build().WALK_SPEED).toBe(20);
+		expect(store.build().DEBUG).toBe(false);
+		expect(store.getDefinitions().get("WALK_SPEED")?.hasLiveOverride).toBe(true);
+		expect(store.getDefinitions().get("DEBUG")?.hasLiveOverride).toBe(false);
+	});
+
 	test("store live updates override persisted values until reset", () => {
 		const persisted: PersistedConstantGroup = {
 			WALK_SPEED: 24,

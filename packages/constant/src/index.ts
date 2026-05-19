@@ -234,6 +234,22 @@ export class Constant<T extends object = {}> {
 		this.store.resetValue(name);
 	}
 
+	/**
+	 * Reapplies the current script default for a single constant as a live override.
+	 * @param name - Constant name to reapply.
+	 */
+	public reapplyDefault<K extends keyof T & string>(name: K): void {
+		this.store.reapplyDefault(name);
+	}
+
+	/**
+	 * Reapplies the current script defaults for all drifted constants as live overrides.
+	 * @returns Names of constants that were reapplied.
+	 */
+	public reapplyDriftedDefaults(): ReadonlyArray<string> {
+		return this.store.reapplyDriftedDefaults();
+	}
+
 	public getPersistedSnapshot(): PersistedConstantGroup {
 		return this.store.getPersistedSnapshot();
 	}

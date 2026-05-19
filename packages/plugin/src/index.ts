@@ -10,10 +10,9 @@ export {
 } from "./writer";
 export { createConstantPluginPersistenceService, type ConstantPersistenceWriter, type ConstantPluginPersistenceService } from "./service";
 export {
-	CONSTANT_TRANSPORT_EVENT_NAME,
-	CONSTANT_TRANSPORT_FOLDER_NAME,
 	connectPluginTransport,
-	getOrCreatePluginTransportEvent,
+	CONSTANT_TRANSPORT_EVENT_NAME,
+	getPluginTransportEvent as getOrCreatePluginTransportEvent,
 } from "./transport";
 
 export interface ConstantPluginUpdateRequest {

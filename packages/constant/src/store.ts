@@ -95,6 +95,30 @@ export class ConstantStore<T extends object = {}> {
 		this.notifyListeners();
 	}
 
+	public reapplyDefault<K extends keyof T & string>(name: K): void {
+		const definition = this.definitions.get(name);
+		if (!definition) error(`Unknown constant: ${name}`);
+		definition.currentValue = definition.defaultValue;
+		definition.hasLiveOverride = true;
+		(this.values as Record<string, SupportedPrimitive>)[name] = definition.defaultValue;
+		this.liveOverrides.set(name, definition.defaultValue);
+		this.notifyListeners();
+	}
+
+	public reapplyDriftedDefaults(): ReadonlyArray<string> {
+		const reapplied = new Array<string>();
+		for (const [name, definition] of this.definitions) {
+			if (!definition.defaultDrifted) continue;
+			definition.currentValue = definition.defaultValue;
+			definition.hasLiveOverride = true;
+			(this.values as Record<string, SupportedPrimitive>)[name] = definition.defaultValue;
+			this.liveOverrides.set(name, definition.defaultValue);
+			reapplied.push(name);
+		}
+		if (reapplied.size() > 0) this.notifyListeners();
+		return reapplied;
+	}
+
 	public getPersistedSnapshot(): PersistedConstantGroup {
 		const output: PersistedConstantGroup = { _defaults: {} };
 		for (const [name, definition] of this.definitions) {
@@ -107,17 +131,24 @@ export class ConstantStore<T extends object = {}> {
 	private createDefinition<V extends SupportedPrimitive>(name: string, defaultValue: V): ConstantDefinition<V> {
 		const persistedValue = tryReadSerializedValue(this.persisted[name]);
 		const persistedDefault = tryReadSerializedValue(this.persisted._defaults?.[name]);
-		const defaultDrifted = persistedDefault !== undefined && !serializedEquals(persistedDefault, serializeConstant(defaultValue));
+		const serializedDefault = serializeConstant(defaultValue);
+		const defaultDrifted = persistedDefault !== undefined && !serializedEquals(persistedDefault, serializedDefault);
+		const shouldMigratePersistedDefault =
+			persistedValue !== undefined &&
+			persistedDefault !== undefined &&
+			serializedEquals(persistedValue, persistedDefault) &&
+			defaultDrifted;
 		const resolvedPersisted = deserializeConstant(persistedValue, defaultValue) as V;
+		const effectivePersistedValue = shouldMigratePersistedDefault ? defaultValue : resolvedPersisted;
 		const liveOverride = this.liveOverrides.get(name) as V | undefined;
-		const currentValue = liveOverride ?? (persistedValue !== undefined ? resolvedPersisted : defaultValue);
+		const currentValue = liveOverride ?? (persistedValue !== undefined ? effectivePersistedValue : defaultValue);
 
 		return {
 			name,
 			scope: this.scope,
 			kind: inferKind(defaultValue),
 			defaultValue,
-			persistedValue: persistedValue !== undefined ? resolvedPersisted : undefined,
+			persistedValue: persistedValue !== undefined ? effectivePersistedValue : undefined,
 			hasPersistedValue: persistedValue !== undefined,
 			defaultDrifted,
 			currentValue,
