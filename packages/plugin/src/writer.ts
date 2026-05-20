@@ -45,7 +45,8 @@ export function createHttpIoServeWriter(baseUrl = "http://localhost:33333"): Con
 		);
 
 		if (!success) {
-			error(`Failed to write constants through io-serve at ${url}: ${tostring(responseOrError)}`);
+			warn(`Failed to write constants through io-serve at ${url}: ${tostring(responseOrError)}`);
+			return;
 		}
 
 		const response = responseOrError as {
@@ -54,7 +55,8 @@ export function createHttpIoServeWriter(baseUrl = "http://localhost:33333"): Con
 			StatusMessage: string;
 		};
 		if (!response.Success) {
-			error(`io-serve rejected constant write to ${url} with status ${response.StatusCode}: ${response.StatusMessage}`);
+			warn(`io-serve rejected constant write to ${url} with status ${response.StatusCode}: ${response.StatusMessage}`);
+			return;
 		}
 	});
 }
