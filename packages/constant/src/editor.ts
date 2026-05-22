@@ -53,7 +53,7 @@ const replicatedClientEditors = new Map<string, ReplicatedClientEditor>();
 
 function ensureIrisInitialized(): void {
 	if (irisInitialized) return;
-	Iris.Init();
+	pcall(() => Iris.Init())
 	irisInitialized = true;
 }
 
