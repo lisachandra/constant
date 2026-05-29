@@ -1,6 +1,6 @@
 {
 	"name": "@lisachandra/plugin",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Studio plugin bridge for syncing live constant edits to JSON files through io-serve.",
 	"keywords": ["roblox", "rbxts", "plugin", "constants", "io-serve"],
 	"homepage": "https://github.com/lisachandra/constant",
