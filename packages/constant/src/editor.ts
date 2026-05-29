@@ -41,6 +41,7 @@ interface RegisteredEditor {
 
 interface ReplicatedClientEditor {
 	readonly store: ConstantStore<object>;
+	readonly options: ConstantEditorOptions;
 	readonly disconnectHotkey: () => void;
 	readonly disconnectReplication: () => void;
 }
@@ -255,6 +256,17 @@ function getKeyCodeByName(name: string): Enum.KeyCode | undefined {
 	return Enum.KeyCode.GetEnumItems().find((item) => item.Name === name);
 }
 
+function createReplicatedEditorOptions(
+	payload: ReplicatedEditorRegistrationPayload,
+	replication: ReturnType<typeof createConstantReplicationClient>,
+): ConstantEditorOptions {
+	return {
+		title: payload.title,
+		persistMode: payload.persistMode,
+		onPersist: (update) => replication.requestUpdate(update),
+	};
+}
+
 function ensureReplicatedClientEditorListenerInstalled(): void {
 	if (replicatedClientListenerInstalled || !RunService.IsClient()) return;
 	replicatedClientListenerInstalled = true;
@@ -275,17 +287,13 @@ function ensureReplicatedClientEditorListenerInstalled(): void {
 		}
 
 		const replication = createConstantReplicationClient(mirrorStore);
+		const options = createReplicatedEditorOptions(payload, replication);
 		const keyCode = getKeyCodeByName(payload.keyCodeName ?? "");
-		const disconnectHotkey = keyCode
-			? bindConstantEditorHotkey(mirrorStore, keyCode, {
-					title: payload.title,
-					persistMode: payload.persistMode,
-					onPersist: (update) => replication.requestUpdate(update),
-				})
-			: () => undefined;
+		const disconnectHotkey = keyCode ? bindConstantEditorHotkey(mirrorStore, keyCode, options) : () => undefined;
 
 		replicatedClientEditors.set(payload.id, {
 			store: mirrorStore,
+			options,
 			disconnectHotkey,
 			disconnectReplication: () => replication.disconnect(),
 		});
@@ -297,6 +305,7 @@ export function mountConstantEditor<T extends object>(store: ConstantStore<T>, o
 
 	const editorId = `${store.getScope()}:${store.getPersistPath()}:${store.getSourcePath()}`;
 	const resolvedStore = replicatedClientEditors.get(editorId)?.store ?? store;
+	const mountedEditorIds = new Array<string>();
 
 	registeredEditors.set(editorId, {
 		id: editorId,
@@ -306,10 +315,28 @@ export function mountConstantEditor<T extends object>(store: ConstantStore<T>, o
 		dirtyNames: new Set<string>(),
 		states: createEditorWidgetStates(),
 	});
+	mountedEditorIds.push(editorId);
+
+	if (store.getScope() === "client") {
+		for (const [replicatedEditorId, replicatedEditor] of replicatedClientEditors) {
+			if (replicatedEditor.store.getScope() !== "server" || registeredEditors.has(replicatedEditorId)) continue;
+			registeredEditors.set(replicatedEditorId, {
+				id: replicatedEditorId,
+				path: replicatedEditor.store.getSourcePath(),
+				store: replicatedEditor.store,
+				options: replicatedEditor.options,
+				dirtyNames: new Set<string>(),
+				states: createEditorWidgetStates(),
+			});
+			mountedEditorIds.push(replicatedEditorId);
+		}
+	}
 	ensureSharedEditorMounted();
 
 	return () => {
-		registeredEditors.delete(editorId);
+		for (const mountedEditorId of mountedEditorIds) {
+			registeredEditors.delete(mountedEditorId);
+		}
 		teardownSharedEditorIfEmpty();
 	};
 }

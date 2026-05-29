@@ -50,7 +50,13 @@ export { ConstantStore } from "./store";
 import { ConstantStore } from "./store";
 import { createConstantUpdatePayload } from "./bridge";
 import { createBindableEventSink } from "./transport";
-import { createConstantReplicationClient, createConstantReplicationServer, type ConstantReplicationClientHandle, type ConstantReplicationServerHandle } from "./replication";
+import {
+	createConstantReplicationClient,
+	createConstantReplicationServer,
+	type ConstantReplicatedEditorOptions,
+	type ConstantReplicationClientHandle,
+	type ConstantReplicationServerHandle,
+} from "./replication";
 import type {
 	AddConstant,
 	ConfiguredConstantModule,
@@ -66,7 +72,7 @@ import type {
 interface ConstantRuntimeConfiguration {
 	persistPath: string;
 	persistedBySource: PersistedConstantFile;
-	editorSetup?: { keyCode?: Enum.KeyCode; title?: string };
+	editorSetup?: ConstantReplicatedEditorOptions;
 }
 
 const configuredConstants = new Map<ConstantScope, ConstantRuntimeConfiguration>();
@@ -116,6 +122,7 @@ function getConfiguredConstantRuntime(scope: ConstantScope): ConstantRuntimeConf
 
 export class Constant<T extends object = {}> {
 	private readonly store: ConstantStore<T>;
+	private readonly editorSetup: ConstantReplicatedEditorOptions | undefined;
 	private replicationClientHandle: ConstantReplicationClientHandle | undefined;
 	private replicationServerHandle: ConstantReplicationServerHandle | undefined;
 	private clientSnapshotSeeded = false;
@@ -126,6 +133,7 @@ export class Constant<T extends object = {}> {
 		const sourcePath = getCallerSourcePath();
 		const configured = getConfiguredConstantRuntime(scope);
 		const persisted = configured.persistedBySource[sourcePath] ?? {};
+		this.editorSetup = configured.editorSetup;
 		this.store = new ConstantStore(scope, persisted, configured.persistPath, sourcePath);
 
 		if (scope === "client" && configured.editorSetup) {
@@ -140,7 +148,7 @@ export class Constant<T extends object = {}> {
 		if (!RunService.IsServer()) return;
 		if (this.store.getScope() !== "server") return;
 		if (!this.replicationServerHandle) {
-			this.replicationServerHandle = createConstantReplicationServer(this.store);
+			this.replicationServerHandle = createConstantReplicationServer(this.store, { editor: this.editorSetup });
 			return;
 		}
 		this.replicationServerHandle.broadcastAll();

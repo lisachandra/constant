@@ -74,6 +74,31 @@ describe("replication server", () => {
 		editorRemote.Destroy();
 	});
 
+	test("server editor registration includes default hotkey", () => {
+		const store = new ConstantStore("server", {}, "src/server/constants.json", "game.ServerA")
+			.add("PART_SIZE", 6);
+
+		const server = createConstantReplicationServer(store, {
+			syncOnPlayerAdded: false,
+		});
+
+		let receivedRegistration: { action: string; keyCodeName?: string } | undefined;
+		const connection = editorRemote.OnClientEvent.Connect((payload) => {
+			typeAssertIs<ReplicatedEditorRegistrationPayload>(payload)
+			receivedRegistration = { action: payload.action, keyCodeName: payload.keyCodeName };
+		});
+
+		server.broadcastAll();
+
+		expect(receivedRegistration?.action).toBe("register");
+		expect(receivedRegistration?.keyCodeName).toBe("F8");
+
+		server.disconnect();
+		connection.Disconnect();
+		constantRemote.Destroy();
+		editorRemote.Destroy();
+	});
+
 	test("does not broadcast updates for a different scope", () => {
 		const store = new ConstantStore("client", {}, "src/client/constants.json", "game.A")
 			.add("WALK_SPEED", 16);

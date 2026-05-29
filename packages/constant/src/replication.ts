@@ -18,8 +18,14 @@ import type {
 	SupportedPrimitive,
 } from "./types";
 
+export interface ConstantReplicatedEditorOptions {
+	keyCode?: Enum.KeyCode;
+	title?: string;
+}
+
 export interface AutomaticConstantReplicationOptions {
 	canEdit?: (player: Player, request: ConstantReplicationRequest, constant?: ConstantStore<object>) => boolean;
+	editor?: ConstantReplicatedEditorOptions;
 }
 
 let automaticConstantReplicationOptions: AutomaticConstantReplicationOptions = {};
@@ -33,6 +39,7 @@ export interface ConstantReplicationServerOptions<T extends object = object> {
 	syncOnPlayerAdded?: boolean;
 	canEdit?: (player: Player, request: ConstantReplicationRequest, constant: ConstantStore<T>) => boolean;
 	onApprovedUpdate?: (player: Player, update: ConstantReplicationUpdate, constant: ConstantStore<T>) => void;
+	editor?: ConstantReplicatedEditorOptions;
 }
 
 export function configureAutomaticConstantReplication(options: AutomaticConstantReplicationOptions = {}): void {
@@ -209,7 +216,10 @@ export function applyReplicationUpdate<T extends object>(
 	return true;
 }
 
-function createReplicatedEditorRegistrationPayload<T extends object>(constant: ConstantStore<T>): ReplicatedEditorRegistrationPayload {
+function createReplicatedEditorRegistrationPayload<T extends object>(
+	constant: ConstantStore<T>,
+	editor?: ConstantReplicatedEditorOptions,
+): ReplicatedEditorRegistrationPayload {
 	const definitions = new Array<ReplicatedEditorDefinitionPayload>();
 	for (const [name, definition] of constant.getDefinitions()) {
 		definitions.push({
@@ -219,14 +229,16 @@ function createReplicatedEditorRegistrationPayload<T extends object>(constant: C
 		});
 	}
 
+	const keyCode = editor?.keyCode ?? (constant.getScope() === "server" ? Enum.KeyCode.F8 : undefined);
 	return {
 		action: "register",
 		id: `${constant.getScope()}:${constant.getPersistPath()}:${constant.getSourcePath()}`,
 		scope: constant.getScope(),
 		sourcePath: constant.getSourcePath(),
 		persistPath: constant.getPersistPath(),
-		title: "Constants",
+		title: editor?.title ?? "Constants",
 		persistMode: constant.getScope() === "server" ? "auto" : "manual",
+		keyCodeName: keyCode?.Name,
 		definitions,
 	};
 }
@@ -242,7 +254,7 @@ export function createConstantReplicationServer<T extends object>(
 	ensureAutomaticClientReplicationRelay();
 
 	const broadcastAll = (player?: Player) => {
-		const registrationPayload = createReplicatedEditorRegistrationPayload(constant);
+		const registrationPayload = createReplicatedEditorRegistrationPayload(constant, options.editor ?? automaticConstantReplicationOptions.editor);
 		if (player) {
 			editorEvent.FireClient(player, registrationPayload);
 		} else {
@@ -316,7 +328,7 @@ export function createConstantReplicationClient<T extends object>(
 ): ConstantReplicationClientHandle {
 	const requestEvent = getOrCreateReplicationEvent();
 	const updateEvent = getOrCreateReplicationEvent();
-	const bootstrapPayload = createReplicatedEditorRegistrationPayload(constant);
+	const bootstrapPayload = createReplicatedEditorRegistrationPayload(constant, automaticConstantReplicationOptions.editor);
 	const sendBootstrap = () => requestEvent.FireServer(bootstrapPayload);
 	let disconnected = false;
 	let bootstrapSynchronized = false;
