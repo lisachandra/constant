@@ -47,6 +47,9 @@
 		"@rbxts/luau-polyfill": "*",
 		"@rbxts/iris": "*"
 	},
+	"dependencies": {
+		"@rbxts/fuzzy-search": "catalog:"
+	},
 	"publishConfig": {
 		"access": "public"
 	}
