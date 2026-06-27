@@ -30,6 +30,9 @@ catalogs:
     '@rbxts/compiler-types':
       specifier: latest
       version: 3.0.0-types.0
+    '@rbxts/fuzzy-search':
+      specifier: 1.0.4
+      version: 1.0.4
     '@rbxts/iris':
       specifier: 2.3.1-ts.1
       version: 2.3.1-ts.1
@@ -114,6 +117,10 @@ importers:
         version: 5.5.3
 
   packages/constant:
+    dependencies:
+      '@rbxts/fuzzy-search':
+        specifier: 'catalog:'
+        version: 1.0.4
     devDependencies:
       '@isentinel/tsconfig':
         specifier: 'catalog:'
@@ -786,6 +793,9 @@ packages:
 
   '@rbxts/emittery@3.13.3-ts.1':
     resolution: {integrity: sha512-iEUg8fk1xYO70H5t+a1sO34FkYerP+melGdJYkUV0Jf6fzYms7YQ/5awVjJ7KYJW3vo1bKUODBiBymqz4LHxEA==}
+
+  '@rbxts/fuzzy-search@1.0.4':
+    resolution: {integrity: sha512-sGvBWAY8RHtIMsHmGAcZj2e2yL9wxcDF4q0il5F99Pmky4QjZvGwxUqsR/UnrA5L3B9hLPGcRG2bXHMtZ8Rc4g==}
 
   '@rbxts/iris@2.3.1-ts.1':
     resolution: {integrity: sha512-L/lja+ugKNH3ywdz5c8omXUS34L9oGKlul3yVifzTfQVJS4ryePU/hS6IdMaSbIwNda+qEOehXbSxglF9qxa/A==}
@@ -2730,6 +2740,8 @@ snapshots:
   '@rbxts/emittery@3.13.3-ts.1':
     dependencies:
       '@rbxts-js/emittery': 3.13.3-ts.3
+
+  '@rbxts/fuzzy-search@1.0.4': {}
 
   '@rbxts/iris@2.3.1-ts.1': {}
 
