@@ -1,6 +1,6 @@
 {
 	"name": "@lisachandra/constant",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Strongly-typed, chainable runtime constants with JSON persistence and Studio Iris editing for roblox-ts.",
 	"keywords": ["roblox", "rbxts", "constants", "configuration", "iris"],
 	"homepage": "https://github.com/lisachandra/constant",
