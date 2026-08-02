@@ -48,7 +48,7 @@
 		"@rbxts/iris": "*"
 	},
 	"dependencies": {
-		"@rbxts/fuzzy-search": "catalog:"
+		"@lisachandra/constant-protocol": "workspace:*"
 	},
 	"publishConfig": {
 		"access": "public"

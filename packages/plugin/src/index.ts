@@ -1,3 +1,8 @@
+import {
+	isConstantUpdatePayload as isConstantPluginUpdateRequest,
+	type ConstantUpdatePayload,
+} from "@lisachandra/constant-protocol";
+
 export { applyConstantUpdate, getConstantsFilePath, resolveConstantsFilePath } from "./persistence";
 export { startConstantPluginBootstrap, type ConstantPluginBootstrapHandle, type ConstantPluginBootstrapOptions } from "./bootstrap";
 export { createConstantPluginCoordinator, type ConstantPluginCoordinator, type ConstantPluginCoordinatorOptions } from "./coordinator";
@@ -14,31 +19,12 @@ export {
 	CONSTANT_TRANSPORT_EVENT_NAME,
 	getPluginTransportEvent as getOrCreatePluginTransportEvent,
 } from "./transport";
+export { isConstantPluginUpdateRequest };
 
-export interface ConstantPluginUpdateRequest {
-	scope: "client" | "server";
-	name: string;
-	serializedValue: unknown;
-	serializedDefault: unknown;
-	sourcePath: string;
-	persistPath?: string;
-}
+export type ConstantPluginUpdateRequest = ConstantUpdatePayload;
 
 export interface ConstantPluginBridge {
 	forwardUpdate(request: ConstantPluginUpdateRequest): void;
-}
-
-export function isConstantPluginUpdateRequest(value: unknown): value is ConstantPluginUpdateRequest {
-	if (!typeIs(value, "table")) return false;
-	const request = value as Partial<ConstantPluginUpdateRequest>;
-	return (
-		(request.scope === "client" || request.scope === "server") &&
-		typeIs(request.name, "string") &&
-		typeIs(request.sourcePath, "string") &&
-		("serializedValue" in request) &&
-		("serializedDefault" in request) &&
-		(request.persistPath === undefined || typeIs(request.persistPath, "string"))
-	);
 }
 
 export function createPluginBridge(forwardUpdate: (request: ConstantPluginUpdateRequest) => void): ConstantPluginBridge {

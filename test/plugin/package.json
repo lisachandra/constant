@@ -8,7 +8,7 @@
 	"scripts": {
 		"build": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --verbose --allowCommentDirectives",
 		"dev": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --watch --allowCommentDirectives",
-		"test": "pnpm exec jest-roblox ./jest.config.ts"
+		"test": "pnpm exec jest-roblox"
 	},
 	"devDependencies": {
 		"@isentinel/jest-roblox": "catalog:",
@@ -21,6 +21,7 @@
 		"typescript": "catalog:"
 	},
 	"dependencies": {
+		"@lisachandra/constant-protocol": "workspace:*",
 		"@lisachandra/types": "catalog:",
 		"@lisachandra/test": "catalog:",
 		"@lisachandra/core": "catalog:",

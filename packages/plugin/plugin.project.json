@@ -11,6 +11,9 @@
 				},
 				"@lisachandra": {
 					"$path": "node_modules/@lisachandra",
+					"constant-protocol": {
+						"$path": "../../packages/constant-protocol/out"
+					},
 					"plugin": {
 						"$path": "out"
 					}

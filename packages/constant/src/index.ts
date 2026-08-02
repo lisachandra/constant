@@ -45,6 +45,14 @@ export {
 	type ConstantReplicationServerHandle,
 	type ConstantReplicationServerOptions,
 } from "./replication";
+export { isConstantUpdatePayload } from "@lisachandra/constant-protocol";
+export {
+	getEditorSourceLabel,
+	normalizeSearchQuery,
+	rankEditorGroups,
+	type EditorSearchInput,
+	type EditorSearchResult,
+} from "./search";
 import { bindConstantEditorHotkey, mountConstantEditor } from "./editor";
 export { ConstantStore } from "./store";
 import { ConstantStore } from "./store";

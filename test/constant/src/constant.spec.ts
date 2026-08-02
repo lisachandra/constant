@@ -129,6 +129,12 @@ describe("Constant", () => {
 		expect(store.build().WALK_SPEED).toBe(24);
 	});
 
+	test("build returns a fresh frozen snapshot, not the store's live values", () => {
+		const store = new ConstantStore("client", {}, "src/client/constants.json", "game.TestScript").add("WALK_SPEED", 16);
+		expect(store.build()).never.toBe(store.build());
+		expect(table.isfrozen(store.build())).toBe(true);
+	});
+
 	test("snapshot includes current values and defaults", () => {
 		const serverConstant = new Constant().add("WALK_SPEED", 16).add("DEBUG", false);
 		serverConstant.updateValue("WALK_SPEED", 30);

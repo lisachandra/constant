@@ -1,8 +1,9 @@
 import Iris = require("@rbxts/iris");
-import { FuzzySearch } from "@rbxts/fuzzy-search";
 import { RunService, UserInputService } from "@rbxts/services";
 import { createConstantUpdatePayload } from "./bridge";
 import { createConstantReplicationClient } from "./replication";
+import { createEditorId, createStoreFromRegistration } from "./registration";
+import { getEditorSourceLabel, normalizeSearchQuery, rankEditorGroups, type EditorSearchResult } from "./search";
 import {
     getOrCreateReplicatedEditorEvent,
     isReplicatedEditorRegistrationPayload,
@@ -38,12 +39,6 @@ interface RegisteredEditor {
     readonly options: ConstantEditorOptions;
     readonly dirtyNames: Set<string>;
     readonly states: EditorWidgetStates;
-}
-
-interface RenderableEditorGroup {
-    readonly editor: RegisteredEditor;
-    readonly definitions: Array<[string, ConstantDefinition]>;
-    readonly score: number;
 }
 
 interface ReplicatedClientEditor {
@@ -95,71 +90,9 @@ function syncState<T extends SupportedPrimitive>(state: Iris.State<T>, value: T)
     }
 }
 
-function getEditorSourceLabel(path: string): string {
-    return path.gsub("^game%.", "")[0];
-}
-
 function getEditorTitle(editors: RegisteredEditor[]): string {
     const explicitTitle = editors.find((editor) => editor.options.title !== undefined)?.options.title;
     return explicitTitle ?? "Constants";
-}
-
-function getSortedDefinitions(editor: RegisteredEditor): Array<[string, ConstantDefinition]> {
-    const definitions = new Array<[string, ConstantDefinition]>();
-    for (const [name, definition] of editor.store.getDefinitions()) {
-        definitions.push([name, definition]);
-    }
-    definitions.sort((left, right) => left[0].lower() < right[0].lower());
-    return definitions;
-}
-
-function getFuzzyDefinitions(editor: RegisteredEditor, query: string): Array<[number, string, ConstantDefinition]> {
-    const definitionsByName = new Map<string, ConstantDefinition>();
-    const names = new Array<string>();
-    for (const [name, definition] of editor.store.getDefinitions()) {
-        definitionsByName.set(name, definition);
-        names.push(name);
-    }
-
-    const rankedDefinitions = new Array<[number, string, ConstantDefinition]>();
-    for (const [score, name] of FuzzySearch.Sorting.FuzzyScore(names, query)) {
-        if (score <= 0) continue;
-        const definition = definitionsByName.get(name);
-        if (!definition) continue;
-        rankedDefinitions.push([score, name, definition]);
-    }
-    return rankedDefinitions;
-}
-
-function getRenderableEditorGroups(editors: RegisteredEditor[], query: string): RenderableEditorGroup[] {
-    if (query === "") {
-        const groups = editors.map((editor) => ({
-            editor,
-            definitions: getSortedDefinitions(editor),
-            score: 0,
-        }));
-        groups.sort((left, right) => getEditorSourceLabel(left.editor.path).lower() < getEditorSourceLabel(right.editor.path).lower());
-        return groups;
-    }
-
-    const groups = new Array<RenderableEditorGroup>();
-    for (const editor of editors) {
-        const editorScore = FuzzySearch.Scores.FuzzyScore(getEditorSourceLabel(editor.path), query);
-        const fuzzyDefinitions = getFuzzyDefinitions(editor, query);
-        const bestDefinitionScore = fuzzyDefinitions[0]?.[0] ?? 0;
-        const score = math.max(editorScore, bestDefinitionScore);
-        if (score <= 0) continue;
-
-        groups.push({
-            editor,
-            definitions: fuzzyDefinitions.size() > 0
-                ? fuzzyDefinitions.map(([, name, definition]) => [name, definition])
-                : getSortedDefinitions(editor),
-            score,
-        });
-    }
-    groups.sort((left, right) => left.score > right.score);
-    return groups;
 }
 
 function ensureSharedEditorMounted(): void {
@@ -182,7 +115,7 @@ function ensureSharedEditorMounted(): void {
         Iris.Window([getEditorTitle([...serverEditors, ...clientEditors])], { size: windowSize });
         sharedSearchState ??= Iris.State("");
         const searchInput = Iris.InputText(["Search constants/scripts"], { text: sharedSearchState });
-        const searchQuery = searchInput.state.text.value;
+        const searchQuery = normalizeSearchQuery(searchInput.state.text.value);
         if (serverEditors.size() > 0) renderEditorScope("server", serverEditors, searchQuery);
         if (clientEditors.size() > 0) renderEditorScope("client", clientEditors, searchQuery);
         Iris.End();
@@ -193,11 +126,12 @@ function teardownSharedEditorIfEmpty(): void {
     if (registeredEditors.size() > 0) return;
     sharedDisconnect?.();
     sharedDisconnect = undefined;
+    sharedSearchState = undefined;
 }
 
 function renderEditorScope(scopeLabel: string, editors: RegisteredEditor[], searchQuery: string): void {
     Iris.Tree([scopeLabel]);
-    const groups = getRenderableEditorGroups(editors, searchQuery);
+    const groups = rankEditorGroups(editors, searchQuery);
     if (searchQuery !== "" && groups.size() === 0) {
         Iris.Text([`No ${scopeLabel} constants/scripts match "${searchQuery}"`]);
     }
@@ -207,9 +141,10 @@ function renderEditorScope(scopeLabel: string, editors: RegisteredEditor[], sear
     Iris.End();
 }
 
-function renderEditorGroup(group: RenderableEditorGroup): void {
+function renderEditorGroup(group: EditorSearchResult<RegisteredEditor>): void {
     const editor = group.editor;
 
+    Iris.PushId(editor.id);
     Iris.Separator();
     Iris.Tree([`${getEditorSourceLabel(editor.path)}`]);
 
@@ -260,6 +195,7 @@ function renderEditorGroup(group: RenderableEditorGroup): void {
                 { persistMode, dirtyNames: editor.dirtyNames },
                 editor.states,
                 editor.options.onPersist,
+                editor.id,
             );
         } else {
             Iris.Text(["editing disabled"]);
@@ -293,40 +229,7 @@ function renderEditorGroup(group: RenderableEditorGroup): void {
     }
 
     Iris.End();
-}
-
-function deserializeSerializedValue(serialized: SerializedConstant): SupportedPrimitive {
-    if (serialized === undefined) return undefined;
-    if (typeIs(serialized, "number") || typeIs(serialized, "string") || typeIs(serialized, "boolean")) return serialized;
-    if (serialized.type === "Color3") {
-        const [r, g, b] = serialized.value;
-        return new Color3(r, g, b);
-    }
-    if (serialized.type === "Vector3") {
-        const [x, y, z] = serialized.value;
-        return new Vector3(x, y, z);
-    }
-    if (serialized.type === "CFrame") {
-        const [x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22] = serialized.value;
-        return new CFrame(x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22);
-    }
-    if (serialized.type === "EnumItem") {
-        const enumType = Enum.GetEnums().find((candidate) => tostring(candidate) === serialized.enum);
-        return enumType?.GetEnumItems().find((candidate) => candidate.Name === serialized.item);
-    }
-    return undefined;
-}
-
-function createPersistedFromRegistration(payload: ReplicatedEditorRegistrationPayload) {
-    const persisted = { _defaults: {} as Record<string, SerializedConstant> } as {
-        _defaults: Record<string, SerializedConstant>;
-        [name: string]: SerializedConstant | Record<string, SerializedConstant>;
-    };
-    for (const definition of payload.definitions) {
-        persisted[definition.name] = definition.serializedCurrent;
-        persisted._defaults[definition.name] = definition.serializedDefault;
-    }
-    return persisted;
+    Iris.PopId(editor.id);
 }
 
 function getKeyCodeByName(name: string): Enum.KeyCode | undefined {
@@ -352,16 +255,7 @@ function ensureReplicatedClientEditorListenerInstalled(): void {
         if (!isReplicatedEditorRegistrationPayload(payload)) return;
         if (replicatedClientEditors.has(payload.id)) return;
 
-        let mirrorStore = new ConstantStore<object>(
-            payload.scope,
-            createPersistedFromRegistration(payload),
-            payload.persistPath,
-            payload.sourcePath,
-        );
-        for (const definition of payload.definitions) {
-            const defaultValue = deserializeSerializedValue(definition.serializedDefault);
-            mirrorStore = mirrorStore.add(definition.name, defaultValue);
-        }
+        const mirrorStore = createStoreFromRegistration(payload);
 
         const replication = createConstantReplicationClient(mirrorStore);
         const options = createReplicatedEditorOptions(payload, replication);
@@ -380,7 +274,7 @@ function ensureReplicatedClientEditorListenerInstalled(): void {
 export function mountConstantEditor<T extends object>(store: ConstantStore<T>, options: ConstantEditorOptions = {}): () => void {
     ensureReplicatedClientEditorListenerInstalled();
 
-    const editorId = `${store.getScope()}:${store.getPersistPath()}:${store.getSourcePath()}`;
+    const editorId = createEditorId(store.getScope(), store.getPersistPath(), store.getSourcePath());
     const resolvedStore = replicatedClientEditors.get(editorId)?.store ?? store;
     const mountedEditorIds = new Array<string>();
 
@@ -552,8 +446,9 @@ function renderWidget<T extends object>(
     state: { persistMode: ConstantPersistMode; dirtyNames: Set<string> },
     widgetStates: EditorWidgetStates,
     onPersist?: (payload: ConstantUpdatePayload) => void,
+    widgetIdPrefix?: string,
 ): void {
-    const widgetKey = `${tostring(store)}:${definition.name}`;
+    const widgetKey = `${widgetIdPrefix ?? tostring(store)}:${definition.name}`;
     syncWidgetState(widgetKey, definition, widgetStates);
 
     if (definition.kind === "number") {

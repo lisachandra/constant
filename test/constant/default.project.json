@@ -15,6 +15,9 @@
 					"$className": "Folder",
 					"@lisachandra": {
 						"$path": "node_modules/@lisachandra",
+						"constant-protocol": {
+							"$path": "../../packages/constant-protocol/out"
+						},
 						"constant": {
 							"$path": "../../packages/constant/out"
 						}

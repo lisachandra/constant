@@ -1,4 +1,4 @@
 $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot
-node "$Root/scripts/hoist.mjs"
+node "$Root/scripts/javascript/hoist.mjs"

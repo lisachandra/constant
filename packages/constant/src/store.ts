@@ -38,7 +38,7 @@ export class ConstantStore<T extends object = {}> {
 	}
 
 	public build(): Readonly<T> {
-		return this.values;
+		return table.freeze({ ...this.values });
 	}
 
 	public subscribe(listener: () => void): () => void {

@@ -1,5 +1,7 @@
 import { Players, ReplicatedStorage, RunService } from "@rbxts/services";
+import { isConstantUpdatePayload as isReplicationPayload } from "@lisachandra/constant-protocol";
 import { createConstantUpdatePayload, type ConstantUpdateSink } from "./bridge";
+import { createEditorId, createStoreFromRegistration } from "./registration";
 import {
 	getOrCreateReplicatedEditorEvent,
 	getOrCreateReplicationEvent,
@@ -53,46 +55,6 @@ function getAutomaticCanEdit(
 	constant?: ConstantStore<object>,
 ): boolean {
 	return automaticConstantReplicationOptions.canEdit?.(player, request, constant) ?? true;
-}
-
-function deserializeSerializedValue(serialized: SerializedConstant): SupportedPrimitive {
-	if (serialized === undefined) return undefined;
-	if (typeIs(serialized, "number") || typeIs(serialized, "string") || typeIs(serialized, "boolean")) return serialized;
-	if (serialized.type === "Color3") {
-		const [r, g, b] = serialized.value;
-		return new Color3(r, g, b);
-	}
-	if (serialized.type === "Vector3") {
-		const [x, y, z] = serialized.value;
-		return new Vector3(x, y, z);
-	}
-	if (serialized.type === "CFrame") {
-		const [x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22] = serialized.value;
-		return new CFrame(x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22);
-	}
-	if (serialized.type === "EnumItem") {
-		const enumType = Enum.GetEnums().find((candidate) => tostring(candidate) === serialized.enum);
-		return enumType?.GetEnumItems().find((candidate) => candidate.Name === serialized.item);
-	}
-	return undefined;
-}
-
-function createPersistedFromRegistration(payload: ReplicatedEditorRegistrationPayload): PersistedConstantGroup {
-	const persisted: PersistedConstantGroup = { _defaults: {} };
-	for (const definition of payload.definitions) {
-		persisted[definition.name] = definition.serializedCurrent;
-		persisted._defaults![definition.name] = definition.serializedDefault;
-	}
-	return persisted;
-}
-
-function createStoreFromRegistration(payload: ReplicatedEditorRegistrationPayload): ConstantStore<object> {
-	let store = new ConstantStore<object>(payload.scope, createPersistedFromRegistration(payload), payload.persistPath, payload.sourcePath);
-	for (const definition of payload.definitions) {
-		const defaultValue = deserializeSerializedValue(definition.serializedDefault);
-		store = store.add(definition.name, defaultValue);
-	}
-	return store;
 }
 
 function isReplicationBootstrapPayload(value: unknown): value is ReplicatedEditorRegistrationPayload {
@@ -178,18 +140,6 @@ export interface ConstantReplicationClientHandle {
 	disconnect(): void;
 }
 
-function isReplicationPayload(value: unknown): value is ConstantUpdatePayload {
-	if (!typeIs(value, "table")) return false;
-	const payload = value as Partial<ConstantUpdatePayload>;
-	return (
-		(payload.scope === "client" || payload.scope === "server") &&
-		typeIs(payload.name, "string") &&
-		typeIs(payload.sourcePath, "string") &&
-		("serializedValue" in payload) &&
-		("serializedDefault" in payload)
-	);
-}
-
 function canApplySerializedValue(definition: ConstantDefinition, serializedValue: unknown): serializedValue is SerializedConstant {
 	if (serializedValue === undefined) {
 		return definition.kind === "undefined";
@@ -232,7 +182,7 @@ function createReplicatedEditorRegistrationPayload<T extends object>(
 	const keyCode = editor?.keyCode ?? (constant.getScope() === "server" ? Enum.KeyCode.F8 : undefined);
 	return {
 		action: "register",
-		id: `${constant.getScope()}:${constant.getPersistPath()}:${constant.getSourcePath()}`,
+		id: createEditorId(constant.getScope(), constant.getPersistPath(), constant.getSourcePath()),
 		scope: constant.getScope(),
 		sourcePath: constant.getSourcePath(),
 		persistPath: constant.getPersistPath(),

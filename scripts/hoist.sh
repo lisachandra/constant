@@ -11,4 +11,4 @@ if [[ "${OS:-}" == "Windows_NT" ]] || [[ "$(uname -s)" =~ ^(MINGW|MSYS|CYGWIN) ]
   exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$ROOT_DIR/scripts/hoist.ps1"
 fi
 
-exec node "$ROOT_DIR/scripts/hoist.mjs"
+exec node "$ROOT_DIR/scripts/javascript/hoist.mjs"

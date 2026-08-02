@@ -1,35 +1,22 @@
-export type ConstantScope = "client" | "server";
+import type {
+	ConstantScope,
+	ConstantUpdatePayload,
+	PersistedConstantFile,
+	PersistedConstantGroup,
+	SerializedConstant,
+} from "@lisachandra/constant-protocol";
 
-export type SerializedConstant =
-	| number
-	| string
-	| boolean
-	| undefined
-	| { type: "Color3"; value: [number, number, number] }
-	| { type: "Vector3"; value: [number, number, number] }
-	| { type: "CFrame"; value: [number, number, number, number, number, number, number, number, number, number, number, number] }
-	| { type: "EnumItem"; enum: string; item: string };
+export type {
+	ConstantScope,
+	SerializedConstant,
+	PersistedConstantGroup,
+	PersistedConstantFile,
+} from "@lisachandra/constant-protocol";
 
-export interface ConstantPluginUpdateRequest {
-	scope: ConstantScope;
-	name: string;
-	serializedValue: unknown;
-	serializedDefault: unknown;
-	sourcePath: string;
-	persistPath?: string;
-}
+export type ConstantPluginUpdateRequest = ConstantUpdatePayload;
 
 export function resolveConstantsFilePath(request: ConstantPluginUpdateRequest): string {
 	return request.persistPath ?? getConstantsFilePath(request.scope);
-}
-
-export interface PersistedConstantGroup {
-	_defaults?: Record<string, SerializedConstant>;
-	[name: string]: SerializedConstant | Record<string, SerializedConstant> | undefined;
-}
-
-export interface PersistedConstantFile {
-	[sourcePath: string]: PersistedConstantGroup | undefined;
 }
 
 export function getConstantsFilePath(scope: ConstantScope): string {

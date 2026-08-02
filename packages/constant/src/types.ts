@@ -1,4 +1,18 @@
-export type ConstantScope = "client" | "server";
+import type {
+	ConstantScope,
+	ConstantUpdatePayload,
+	PersistedConstantFile,
+	PersistedConstantGroup,
+	SerializedConstant,
+} from "@lisachandra/constant-protocol";
+
+export type {
+	ConstantScope,
+	ConstantUpdatePayload,
+	PersistedConstantFile,
+	PersistedConstantGroup,
+	SerializedConstant,
+} from "@lisachandra/constant-protocol";
 
 export type SupportedPrimitive = number | string | boolean | Color3 | Vector3 | CFrame | EnumItem | undefined;
 
@@ -32,35 +46,7 @@ export type PrimitiveKind =
 	| "EnumItem"
 	| "undefined";
 
-export type SerializedConstant =
-	| number
-	| string
-	| boolean
-	| undefined
-	| { type: "Color3"; value: [number, number, number] }
-	| { type: "Vector3"; value: [number, number, number] }
-	| { type: "CFrame"; value: [number, number, number, number, number, number, number, number, number, number, number, number] }
-	| { type: "EnumItem"; enum: string; item: string };
-
-export interface PersistedConstantGroup {
-	_defaults?: Record<string, SerializedConstant>;
-	[name: string]: SerializedConstant | Record<string, SerializedConstant> | undefined;
-}
-
-export interface PersistedConstantFile {
-	[sourcePath: string]: PersistedConstantGroup | undefined;
-}
-
 export type ConfiguredConstantModule = PersistedConstantFile;
-
-export interface ConstantUpdatePayload {
-	scope: ConstantScope;
-	name: string;
-	serializedValue: SerializedConstant;
-	serializedDefault: SerializedConstant;
-	sourcePath: string;
-	persistPath?: string;
-}
 
 export interface ConstantReplicationRequest extends ConstantUpdatePayload {}
 export interface ConstantReplicationUpdate extends ConstantUpdatePayload {}

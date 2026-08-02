@@ -125,7 +125,7 @@ describe("plugin bridge", () => {
 		const folder = new Instance("Folder");
 		const event = getOrCreatePluginTransportEvent(folder);
 
-		expect(event.Name).toBe("constant");
+		expect(event.Name).toBe(CONSTANT_TRANSPORT_EVENT_NAME);
 		expect(event.Parent).toBe(folder);
 	});
 

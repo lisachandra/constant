@@ -1,8 +1,12 @@
 import { ReplicatedStorage } from "@rbxts/services";
+import {
+	CONSTANT_TRANSPORT_EVENT_NAME,
+	getOrCreateBindableTransportEvent,
+} from "@lisachandra/constant-protocol";
 import { createConstantUpdatePayload, type ConstantUpdateSink } from "./bridge";
 import type { ConstantPersistMode, ConstantScope, ConstantUpdatePayload, SerializedConstant, SupportedPrimitive } from "./types";
 
-export const CONSTANT_TRANSPORT_EVENT_NAME = "Constant";
+export { CONSTANT_TRANSPORT_EVENT_NAME, getOrCreateBindableTransportEvent as getOrCreateTransportEvent };
 export const CONSTANT_EDITOR_EVENT_NAME = "ConstantEditor";
 export const CONSTANT_REPLICATION_EVENT_NAME = "ConstantReplication";
 
@@ -50,17 +54,7 @@ export function isReplicatedEditorRegistrationPayload(value: unknown): value is 
 	return payload.action === "register"
 }
 
-export function getOrCreateTransportEvent(parent: Instance = ReplicatedStorage): BindableEvent {
-	const existing = parent.FindFirstChild(CONSTANT_TRANSPORT_EVENT_NAME);
-	if (existing?.IsA("BindableEvent")) return existing;
-
-	const event = new Instance("BindableEvent");
-	event.Name = CONSTANT_TRANSPORT_EVENT_NAME;
-	event.Parent = parent;
-	return event;
-}
-
-export function createBindableEventSink(event: BindableEvent = getOrCreateTransportEvent()): ConstantUpdateSink {
+export function createBindableEventSink(event: BindableEvent = getOrCreateBindableTransportEvent()): ConstantUpdateSink {
 	return {
 		publish(payload) {
 			event.Fire(payload);
@@ -74,7 +68,7 @@ export function publishBindableTransport(
 	value: SupportedPrimitive,
 	defaultValue: SupportedPrimitive,
 	sourcePath: string,
-	event: BindableEvent = getOrCreateTransportEvent(),
+	event: BindableEvent = getOrCreateBindableTransportEvent(),
 	persistPath?: string,
 ): void {
 	event.Fire(createConstantUpdatePayload(scope, name, value, defaultValue, sourcePath, persistPath));
@@ -82,7 +76,7 @@ export function publishBindableTransport(
 
 export function connectBindableTransport(
 	callback: (payload: ConstantUpdatePayload) => void,
-	event: BindableEvent = getOrCreateTransportEvent(),
+	event: BindableEvent = getOrCreateBindableTransportEvent(),
 ): RBXScriptConnection {
 	return event.Event.Connect((payload) => callback(payload as ConstantUpdatePayload));
 }
