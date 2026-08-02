@@ -287,3 +287,6 @@ CMakeSettings.json
 
 # Anything starting with three underscores
 ___*
+
+# Local registry credentials (never commit)
+.npmrc
