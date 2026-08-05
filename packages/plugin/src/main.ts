@@ -1,6 +1,13 @@
 import { RunService } from "@rbxts/services";
-import { startConstantPluginBootstrap, type ConstantPluginBootstrapHandle } from "./bootstrap";
-import { formatConstantStudioPluginStatus } from "./studio-state";
+
+import { type ConstantPluginBootstrapHandle, startConstantPluginBootstrap } from "./bootstrap";
+import { formatConstantStudioPluginStatus } from "./studioState";
+
+const TOOLBAR_NAME = "Constant";
+const TOOLBAR_BUTTON_ID = "ConstantBridge";
+const TOOLBAR_BUTTON_TOOLTIP = "Toggle the Constant plugin bridge status panel.";
+const WIDGET_ID = "lisachandra.constant.bridge";
+const WIDGET_TITLE = "Constant Bridge";
 
 declare global {
 	interface DockWidgetPluginGui {
@@ -9,17 +16,11 @@ declare global {
 }
 
 function main(plugin: Plugin): void {
-	const TOOLBAR_NAME = "Constant";
-	const TOOLBAR_BUTTON_ID = "ConstantBridge";
-	const TOOLBAR_BUTTON_TOOLTIP = "Toggle the Constant plugin bridge status panel.";
-	const WIDGET_ID = "lisachandra.constant.bridge";
-	const WIDGET_TITLE = "Constant Bridge";
-
 	interface ConstantStudioPluginWidget {
-		readonly widget: DockWidgetPluginGui;
-		readonly statusLabel: TextLabel;
-		readonly reconnectButton: TextButton;
 		readonly flushButton: TextButton;
+		readonly reconnectButton: TextButton;
+		readonly statusLabel: TextLabel;
+		readonly widget: DockWidgetPluginGui;
 	}
 
 	function createStudioPluginWidget(): ConstantStudioPluginWidget {
@@ -35,7 +36,7 @@ function main(plugin: Plugin): void {
 				140,
 			),
 		);
-		widget.Title = WIDGET_TITLE
+		widget.Title = WIDGET_TITLE;
 		widget.Name = WIDGET_TITLE;
 
 		const content = new Instance("Frame");
@@ -92,7 +93,8 @@ function main(plugin: Plugin): void {
 		descriptionLabel.TextXAlignment = Enum.TextXAlignment.Left;
 		descriptionLabel.TextYAlignment = Enum.TextYAlignment.Top;
 		descriptionLabel.TextColor3 = Color3.fromRGB(196, 196, 196);
-		descriptionLabel.Text = "Auto-starts on Studio load and keeps listening when play mode begins.";
+		descriptionLabel.Text =
+			"Auto-starts on Studio load and keeps listening when play mode begins.";
 		descriptionLabel.Parent = content;
 
 		const actions = new Instance("Frame");
@@ -132,15 +134,19 @@ function main(plugin: Plugin): void {
 		flushButton.Text = "Flush All";
 		flushButton.Parent = actions;
 
-		return { widget, statusLabel, reconnectButton, flushButton };
+		return { flushButton, reconnectButton, statusLabel, widget };
 	}
 
 	const toolbar = plugin.CreateToolbar(TOOLBAR_NAME);
-	const toolbarButton = toolbar.CreateButton(TOOLBAR_BUTTON_ID, TOOLBAR_BUTTON_TOOLTIP, "rbxasset://textures/StudioSharedUI/animation_editor/icon_play.png");
+	const toolbarButton = toolbar.CreateButton(
+		TOOLBAR_BUTTON_ID,
+		TOOLBAR_BUTTON_TOOLTIP,
+		"rbxasset://textures/StudioSharedUI/animation_editor/icon_play.png",
+	);
 	const studioWidget = createStudioPluginWidget();
 
-	let bootstrapHandle: ConstantPluginBootstrapHandle | undefined;
-	let heartbeatConnection: RBXScriptConnection | undefined;
+	let bootstrapHandle: undefined | ConstantPluginBootstrapHandle;
+	let heartbeatConnection: undefined | RBXScriptConnection;
 	let isConnected = false;
 	let wasRunning = RunService.IsRunning();
 
@@ -167,8 +173,8 @@ function main(plugin: Plugin): void {
 		}
 
 		bootstrapHandle = startConstantPluginBootstrap({
-			flushDelaySeconds: 0.25,
 			autoFlush: true,
+			flushDelaySeconds: 0.25,
 		});
 		isConnected = true;
 		updateStudioPluginStatus();
@@ -195,7 +201,9 @@ function main(plugin: Plugin): void {
 
 	studioWidget.flushButton.MouseButton1Click.Connect(() => {
 		if (RunService.IsRunning()) {
-			warn("Flush All is unavailable during play mode. Persist through the server runtime instead.");
+			warn(
+				"Flush All is unavailable during play mode. Persist through the server runtime instead.",
+			);
 			return;
 		}
 
@@ -211,14 +219,15 @@ function main(plugin: Plugin): void {
 		if (isRunning && !wasRunning) {
 			ensureBootstrapConnected();
 		}
+
 		wasRunning = isRunning;
 		updateStudioPluginStatus();
 	});
 
 	script.Destroying.Connect(() => {
-		heartbeatConnection?.Disconnect();
+		heartbeatConnection.Disconnect();
 		disconnectBootstrap();
 	});
 }
 
-export = main
+export = main;

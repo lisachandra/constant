@@ -4,15 +4,53 @@
 		"typeRoots": [
 			"${configDir}/node_modules/@rbxts",
 			"${configDir}/node_modules/@lisachandra",
+			"${configDir}/node_modules/@flamework"
 		],
 		"types": [
 			"../@rbxts/types",
 			"../@rbxts/services",
 			"../@rbxts/compiler-types",
-			"../@lisachandra/types",
+			"../@lisachandra/types"
 		],
+		"preserveSymlinks": true,
 		"exactOptionalPropertyTypes": false,
 		"noPropertyAccessFromIndexSignature": false,
 		"declaration": true,
+		"composite": true,
+		"tsBuildInfoFile": "${configDir}/out/tsconfig.tsbuildinfo",
+		"module": "preserve",
+		"moduleResolution": "bundler",
+		"sourceMap": true,
+		"downlevelIteration": null,
+		"customConditions": ["source"]
 	},
+	"references": [
+		{
+			"path": "tsconfig.node.json"
+		},
+		{
+			"path": "packages/constant"
+		},
+		{
+			"path": "packages/constant-protocol"
+		},
+		{
+			"path": "packages/plugin"
+		},
+		{
+			"path": "test/constant"
+		},
+		{
+			"path": "test/demo"
+		},
+		{
+			"path": "test/plugin"
+		}
+	],
+	"files": [],
+	"include": [
+		"${configDir}/src/**/*.ts",
+		"${configDir}/src/**/*.tsx",
+		"${configDir}/src/**/*.json"
+	]
 }

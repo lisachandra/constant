@@ -1,5 +1,71 @@
 import { RunService } from "@rbxts/services";
 
+import { createConstantUpdatePayload } from "./bridge";
+import { bindConstantEditorHotkey, mountConstantEditor } from "./editor";
+import {
+	type ConstantReplicatedEditorOptions,
+	type ConstantReplicationClientHandle,
+	type ConstantReplicationServerHandle,
+	createConstantReplicationClient,
+	createConstantReplicationServer,
+} from "./replication";
+import { ConstantStore } from "./store";
+import { createBindableEventSink } from "./transport";
+import type {
+	AddConstant,
+	ConfiguredConstantModule,
+	ConstantDefinition,
+	ConstantEditorOptions,
+	ConstantScope,
+	ConstantUpdatePayload,
+	PersistedConstantFile,
+	PersistedConstantGroup,
+	SupportedPrimitive,
+} from "./types";
+
+export {
+	createConstantUpdatePayload,
+	createMemoryUpdateSink,
+	publishConstantUpdate,
+} from "./bridge";
+
+export {
+	applyReplicationUpdate,
+	type AutomaticConstantReplicationOptions,
+	configureAutomaticConstantReplication,
+	type ConstantReplicationClientHandle,
+	type ConstantReplicationServerHandle,
+	type ConstantReplicationServerOptions,
+	createConstantReplicationClient,
+	createConstantReplicationServer,
+} from "./replication";
+
+export {
+	type EditorSearchInput,
+	type EditorSearchResult,
+	getEditorSourceLabel,
+	normalizeSearchQuery,
+	rankEditorGroups,
+} from "./search";
+export {
+	deserializeConstant,
+	formatValue,
+	inferKind,
+	serializeConstant,
+	serializedEquals,
+	tryReadSerializedValue,
+} from "./serialize";
+export { ConstantStore } from "./store";
+export {
+	connectBindableTransport,
+	CONSTANT_REPLICATION_EVENT_NAME,
+	CONSTANT_TRANSPORT_EVENT_NAME,
+	createBindableEventSink,
+	getOrCreateReplicatedEditorEvent,
+	getOrCreateReplicationEvent,
+	getOrCreateTransportEvent,
+	publishBindableTransport,
+} from "./transport";
 export type {
 	AddConstant,
 	ConfiguredConstantModule,
@@ -15,72 +81,12 @@ export type {
 	SupportedPrimitive,
 } from "./types";
 
-export {
-	deserializeConstant,
-	formatValue,
-	inferKind,
-	serializeConstant,
-	serializedEquals,
-	tryReadSerializedValue,
-} from "./serialize";
-
-export { createConstantUpdatePayload, createMemoryUpdateSink, publishConstantUpdate } from "./bridge";
-export {
-	CONSTANT_TRANSPORT_EVENT_NAME,
-	CONSTANT_REPLICATION_EVENT_NAME,
-	getOrCreateReplicatedEditorEvent,
-	getOrCreateReplicationEvent,
-	connectBindableTransport,
-	createBindableEventSink,
-	getOrCreateTransportEvent,
-	publishBindableTransport,
-} from "./transport";
-export {
-	applyReplicationUpdate,
-	configureAutomaticConstantReplication,
-	createConstantReplicationClient,
-	createConstantReplicationServer,
-	type AutomaticConstantReplicationOptions,
-	type ConstantReplicationClientHandle,
-	type ConstantReplicationServerHandle,
-	type ConstantReplicationServerOptions,
-} from "./replication";
 export { isConstantUpdatePayload } from "@lisachandra/constant-protocol";
-export {
-	getEditorSourceLabel,
-	normalizeSearchQuery,
-	rankEditorGroups,
-	type EditorSearchInput,
-	type EditorSearchResult,
-} from "./search";
-import { bindConstantEditorHotkey, mountConstantEditor } from "./editor";
-export { ConstantStore } from "./store";
-import { ConstantStore } from "./store";
-import { createConstantUpdatePayload } from "./bridge";
-import { createBindableEventSink } from "./transport";
-import {
-	createConstantReplicationClient,
-	createConstantReplicationServer,
-	type ConstantReplicatedEditorOptions,
-	type ConstantReplicationClientHandle,
-	type ConstantReplicationServerHandle,
-} from "./replication";
-import type {
-	AddConstant,
-	ConfiguredConstantModule,
-	ConstantDefinition,
-	ConstantEditorOptions,
-	ConstantScope,
-	ConstantUpdatePayload,
-	PersistedConstantFile,
-	PersistedConstantGroup,
-	SupportedPrimitive,
-} from "./types";
 
 interface ConstantRuntimeConfiguration {
-	persistPath: string;
-	persistedBySource: PersistedConstantFile;
 	editorSetup?: ConstantReplicatedEditorOptions;
+	persistedBySource: PersistedConstantFile;
+	persistPath: string;
 }
 
 const configuredConstants = new Map<ConstantScope, ConstantRuntimeConfiguration>();
@@ -90,7 +96,7 @@ function getCurrentScope(): ConstantScope {
 }
 
 function getCallerSourcePath(): string {
-	return `${debug.info(3, "s")[0]}`;
+	return debug.info(3, "s")[0];
 }
 
 function normalizeConfiguredModule(persistModule: ConfiguredConstantModule): PersistedConstantFile {
@@ -99,6 +105,7 @@ function normalizeConfiguredModule(persistModule: ConfiguredConstantModule): Per
 
 /**
  * Configures the shared persisted constant entrypoint for the current runtime environment.
+ *
  * @param persistPath - The JSON path used by Studio persistence and replication metadata.
  * @param persistModule - The imported persisted JSON module for this environment.
  * @throws If called more than once for the same environment scope.
@@ -114,29 +121,32 @@ export function configureConstant(
 	}
 
 	configuredConstants.set(scope, {
-		persistPath,
-		persistedBySource: normalizeConfiguredModule(persistModule),
 		editorSetup,
+		persistedBySource: normalizeConfiguredModule(persistModule),
+		persistPath,
 	});
 }
 
 function getConfiguredConstantRuntime(scope: ConstantScope): ConstantRuntimeConfiguration {
 	const configured = configuredConstants.get(scope);
 	if (!configured) {
-		error(`Constant for ${scope} scope was created before configureConstant(). Call configureConstant(persistPath, persistModule) first.`);
+		error(
+			`Constant for ${scope} scope was created before configureConstant(). Call configureConstant(persistPath, persistModule) first.`,
+		);
 	}
+
 	return configured;
 }
 
-export class Constant<T extends object = {}> {
-	private readonly store: ConstantStore<T>;
-	private readonly editorSetup: ConstantReplicatedEditorOptions | undefined;
-	private replicationClientHandle: ConstantReplicationClientHandle | undefined;
-	private replicationServerHandle: ConstantReplicationServerHandle | undefined;
-	private clientSnapshotSeeded = false;
+export class Constant<T extends object = object> {
 	private clientSnapshotQueued = false;
+	private clientSnapshotSeeded = false;
+	private readonly editorSetup: undefined | ConstantReplicatedEditorOptions;
+	private replicationClientHandle: undefined | ConstantReplicationClientHandle;
+	private replicationServerHandle: undefined | ConstantReplicationServerHandle;
+	private readonly store: ConstantStore<T>;
 
-	public constructor() {
+	constructor() {
 		const scope = getCurrentScope();
 		const sourcePath = getCallerSourcePath();
 		const configured = getConfiguredConstantRuntime(scope);
@@ -153,26 +163,47 @@ export class Constant<T extends object = {}> {
 	}
 
 	private ensureAutomaticServerReplication(): void {
-		if (!RunService.IsServer()) return;
-		if (this.store.getScope() !== "server") return;
-		if (!this.replicationServerHandle) {
-			this.replicationServerHandle = createConstantReplicationServer(this.store, { editor: this.editorSetup });
+		if (!RunService.IsServer()) {
 			return;
 		}
+
+		if (this.store.getScope() !== "server") {
+			return;
+		}
+
+		if (!this.replicationServerHandle) {
+			this.replicationServerHandle = createConstantReplicationServer(this.store, {
+				editor: this.editorSetup,
+			});
+			return;
+		}
+
 		this.replicationServerHandle.broadcastAll();
 	}
 
-	private getOrCreateClientReplicationHandle(): ConstantReplicationClientHandle | undefined {
-		if (!RunService.IsClient()) return undefined;
-		if (this.store.getScope() !== "client") return undefined;
+	private getOrCreateClientReplicationHandle(): undefined | ConstantReplicationClientHandle {
+		if (!RunService.IsClient()) {
+			return undefined;
+		}
+
+		if (this.store.getScope() !== "client") {
+			return undefined;
+		}
+
 		this.replicationClientHandle ??= createConstantReplicationClient(this.store);
 		return this.replicationClientHandle;
 	}
 
 	private seedClientReplicationSnapshot(): void {
-		if (this.clientSnapshotSeeded) return;
+		if (this.clientSnapshotSeeded) {
+			return;
+		}
+
 		const replication = this.getOrCreateClientReplicationHandle();
-		if (!replication) return;
+		if (!replication) {
+			return;
+		}
+
 		for (const [name, definition] of this.store.getDefinitions()) {
 			replication.requestUpdate(
 				createConstantUpdatePayload(
@@ -185,13 +216,22 @@ export class Constant<T extends object = {}> {
 				),
 			);
 		}
+
 		this.clientSnapshotSeeded = true;
 	}
 
 	private scheduleClientSnapshotSeed(): void {
-		if (!RunService.IsClient()) return;
-		if (this.store.getScope() !== "client") return;
-		if (this.clientSnapshotSeeded || this.clientSnapshotQueued) return;
+		if (!RunService.IsClient()) {
+			return;
+		}
+
+		if (this.store.getScope() !== "client") {
+			return;
+		}
+
+		if (this.clientSnapshotSeeded || this.clientSnapshotQueued) {
+			return;
+		}
 
 		this.clientSnapshotQueued = true;
 		task.defer(() => {
@@ -200,26 +240,37 @@ export class Constant<T extends object = {}> {
 		});
 	}
 
-	private resolvePersistHandler(options: ConstantEditorOptions): ((payload: ConstantUpdatePayload) => void) | undefined {
-		if (options.onPersist) return options.onPersist;
+	private resolvePersistHandler(
+		options: ConstantEditorOptions,
+	): undefined | ((payload: ConstantUpdatePayload) => void) {
+		if (options.onPersist) {
+			return options.onPersist;
+		}
 
 		if (RunService.IsClient()) {
 			const replication = this.getOrCreateClientReplicationHandle();
 			if (replication) {
 				this.seedClientReplicationSnapshot();
-				return (payload) => replication.requestUpdate(payload);
+				return (payload) => {
+					replication.requestUpdate(payload);
+				};
 			}
 		}
 
 		if (RunService.IsServer()) {
 			const sink = createBindableEventSink();
-			return (payload) => sink.publish(payload);
+			return (payload) => {
+				sink.publish(payload);
+			};
 		}
 
 		return undefined;
 	}
 
-	public add<K extends string, V extends SupportedPrimitive>(name: K, defaultValue: V): Constant<AddConstant<T, K, V>> {
+	public add<K extends string, V extends SupportedPrimitive>(
+		name: K,
+		defaultValue: V,
+	): Constant<AddConstant<T, K, V>> {
 		this.store.add(name, defaultValue);
 		this.ensureAutomaticServerReplication();
 		this.scheduleClientSnapshotSeed();
@@ -235,31 +286,38 @@ export class Constant<T extends object = {}> {
 	}
 
 	public subscribe(listener: (values: Readonly<T>) => void): () => void {
-		return this.store.subscribe(() => listener(this.store.build()));
+		return this.store.subscribe(() => {
+			listener(this.store.build());
+		});
 	}
 
 	public getScope(): ConstantScope {
 		return this.store.getScope();
 	}
 
-	public updateValue<K extends keyof T & string>(name: K, value: T[K] & SupportedPrimitive): void {
+	public updateValue<K extends keyof T & string>(
+		name: K,
+		value: SupportedPrimitive & T[K],
+	): void {
 		this.store.updateValue(name, value);
 	}
 
-	public resetValue<K extends keyof T & string>(name: K): void {
+	public resetValue(name: keyof T & string): void {
 		this.store.resetValue(name);
 	}
 
 	/**
 	 * Reapplies the current script default for a single constant as a live override.
+	 *
 	 * @param name - Constant name to reapply.
 	 */
-	public reapplyDefault<K extends keyof T & string>(name: K): void {
+	public reapplyDefault(name: keyof T & string): void {
 		this.store.reapplyDefault(name);
 	}
 
 	/**
 	 * Reapplies the current script defaults for all drifted constants as live overrides.
+	 *
 	 * @returns Names of constants that were reapplied.
 	 */
 	public reapplyDriftedDefaults(): ReadonlyArray<string> {
@@ -283,16 +341,23 @@ export class Constant<T extends object = {}> {
 
 	/**
 	 * Binds a hotkey that toggles this constant editor open and closed.
+	 *
+	 * @example
+	 * 	```ts
+	 * 	const cleanup = constants.bindEditorHotkey(Enum.KeyCode.F8, {
+	 * 		title: "Client Constants",
+	 * 	});
+	 * 	const disconnect = constants.subscribe((values) => print(values));
+	 * 	```;
+	 *
 	 * @param keyCode - Keyboard key that toggles the editor.
 	 * @param options - Editor options passed through when mounting.
 	 * @returns Cleanup function that disconnects the hotkey and closes the editor.
-	 * @example
-	 * ```ts
-	 * const cleanup = constants.bindEditorHotkey(Enum.KeyCode.F8, { title: "Client Constants" });
-	 * const disconnect = constants.subscribe((values) => print(values));
-	 * ```
 	 */
-	public bindEditorHotkey(keyCode: Enum.KeyCode, options: ConstantEditorOptions = {}): () => void {
+	public bindEditorHotkey(
+		keyCode: Enum.KeyCode,
+		options: ConstantEditorOptions = {},
+	): () => void {
 		return bindConstantEditorHotkey(this.store, keyCode, {
 			...options,
 			onPersist: this.resolvePersistHandler(options),

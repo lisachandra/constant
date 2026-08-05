@@ -1,7 +1,8 @@
 import { Workspace } from "@rbxts/services";
+
+import { LABEL_GUI_NAME, MARKER_PART_NAME, roundTenth } from "../shared/demoState";
 import { constants as firstConstants } from "./folder/first";
 import { constants as secondConstants } from "./folder/second";
-import { LABEL_GUI_NAME, MARKER_PART_NAME, roundTenth } from "../shared/demo-state";
 
 const SECONDARY_MARKER_PART_NAME = "ConstantDemoMarkerSecondary";
 
@@ -71,8 +72,22 @@ function applyMarkerState(
 }
 
 function applyServerDemoState(): void {
-	applyMarkerState(MARKER_PART_NAME, "First", first.ANNOUNCEMENT, first.PART_SIZE, first.PART_COLOR, first.SPAWN_OFFSET);
-	applyMarkerState(SECONDARY_MARKER_PART_NAME, "Second", second.ANNOUNCEMENT, second.PART_SIZE, second.PART_COLOR, second.SPAWN_OFFSET);
+	applyMarkerState(
+		MARKER_PART_NAME,
+		"First",
+		first.ANNOUNCEMENT,
+		first.PART_SIZE,
+		first.PART_COLOR,
+		first.SPAWN_OFFSET,
+	);
+	applyMarkerState(
+		SECONDARY_MARKER_PART_NAME,
+		"Second",
+		second.ANNOUNCEMENT,
+		second.PART_SIZE,
+		second.PART_COLOR,
+		second.SPAWN_OFFSET,
+	);
 }
 
 firstConstants.subscribe(() => {

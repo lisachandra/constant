@@ -14,17 +14,17 @@ export function createConstantUpdatePayload(
 	persistPath?: string,
 ): ConstantUpdatePayload {
 	return {
-		scope,
 		name,
-		serializedValue: serializeConstant(value),
-		serializedDefault: serializeConstant(defaultValue),
-		sourcePath,
 		persistPath,
+		scope,
+		serializedDefault: serializeConstant(defaultValue),
+		serializedValue: serializeConstant(value),
+		sourcePath,
 	};
 }
 
 export function publishConstantUpdate(
-	sink: ConstantUpdateSink | undefined,
+	sink: undefined | ConstantUpdateSink,
 	scope: ConstantScope,
 	name: string,
 	value: SupportedPrimitive,
@@ -32,13 +32,17 @@ export function publishConstantUpdate(
 	sourcePath: string,
 	persistPath?: string,
 ): void {
-	sink?.publish(createConstantUpdatePayload(scope, name, value, defaultValue, sourcePath, persistPath));
+	sink?.publish(
+		createConstantUpdatePayload(scope, name, value, defaultValue, sourcePath, persistPath),
+	);
 }
 
-export function createMemoryUpdateSink(onPublish: (payload: ConstantUpdatePayload) => void): ConstantUpdateSink {
+export function createMemoryUpdateSink(
+	onPublish: (payload: ConstantUpdatePayload) => void,
+): ConstantUpdateSink {
 	return {
 		publish(payload) {
-			return onPublish(payload);
+			onPublish(payload);
 		},
 	};
 }

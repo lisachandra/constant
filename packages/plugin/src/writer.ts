@@ -1,10 +1,11 @@
 import { HttpService } from "@rbxts/services";
+
 import type { PersistedConstantFile } from "./persistence";
 import type { ConstantPersistenceWriter } from "./service";
 
 export interface ConstantIoServeWriteRequest {
-	path: string;
 	body: string;
+	path: string;
 }
 
 export function encodePersistedConstantFile(contents: PersistedConstantFile): string {
@@ -23,40 +24,45 @@ export function createIoServeWriter(
 	return {
 		write(path, contents) {
 			send({
-				path,
 				body: encodePersistedConstantFile(contents),
+				path,
 			});
 		},
 	};
 }
 
-export function createHttpIoServeWriter(baseUrl = "http://localhost:33333"): ConstantPersistenceWriter {
+export function createHttpIoServeWriter(
+	baseUrl = "http://localhost:33333",
+): ConstantPersistenceWriter {
 	return createIoServeWriter((request) => {
 		const url = buildIoServeWriteUrl(baseUrl, request.path);
 		const [success, responseOrError] = pcall(() =>
 			HttpService.RequestAsync({
-				Url: url,
-				Method: "PUT",
-				Headers: {
-					["Content-Type"]: "application/json",
-				},
 				Body: request.body,
+				Headers: {
+					"Content-Type": "application/json",
+				},
+				Method: "PUT",
+				Url: url,
 			}),
 		);
 
 		if (!success) {
-			warn(`Failed to write constants through io-serve at ${url}: ${tostring(responseOrError)}`);
+			warn(
+				`Failed to write constants through io-serve at ${url}: ${tostring(responseOrError)}`,
+			);
 			return;
 		}
 
 		const response = responseOrError as {
-			Success: boolean;
 			StatusCode: number;
 			StatusMessage: string;
+			Success: boolean;
 		};
 		if (!response.Success) {
-			warn(`io-serve rejected constant write to ${url} with status ${response.StatusCode}: ${response.StatusMessage}`);
-			return;
+			warn(
+				`io-serve rejected constant write to ${url} with status ${response.StatusCode}: ${response.StatusMessage}`,
+			);
 		}
 	});
 }

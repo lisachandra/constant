@@ -1,21 +1,29 @@
 {
 	"name": "@lisachandra/constant-protocol",
 	"version": "0.1.0",
-	"description": "Shared wire protocol for the constant runtime and Studio plugin bridge.",
-	"keywords": ["roblox", "rbxts", "constants", "protocol", "bridge"],
-	"license": "MIT",
 	"private": false,
+	"description": "Shared wire protocol for the constant runtime and Studio plugin bridge.",
+	"keywords": [
+		"bridge",
+		"constants",
+		"protocol",
+		"rbxts",
+		"roblox"
+	],
+	"license": "MIT",
+	"files": [
+		"out",
+		"!**/*.tsbuildinfo"
+	],
 	"type": "module",
+	"main": "out/init.luau",
+	"types": "out/index.d.ts",
 	"exports": {
 		".": {
-			"source": "./src/index.ts",
 			"import": "./out/init.luau",
 			"types": "./out/index.d.ts"
 		}
 	},
-	"main": "out/init.luau",
-	"types": "out/index.d.ts",
-	"files": ["out", "!**/*.tsbuildinfo"],
 	"scripts": {
 		"prepare": "pnpm run build",
 		"build": "rbxtsc --verbose --allowCommentDirectives",
@@ -23,12 +31,12 @@
 		"clean": "shx rm -rf out"
 	},
 	"devDependencies": {
-		"roblox-ts": "catalog:",
+		"@isentinel/roblox-ts": "catalog:",
 		"@isentinel/tsconfig": "catalog:",
-		"@rbxts/compiler-types": "catalog:",
-		"@rbxts/types": "catalog:",
-		"@rbxts/services": "catalog:",
 		"@lisachandra/types": "catalog:",
+		"@rbxts/compiler-types": "catalog:",
+		"@rbxts/services": "catalog:",
+		"@rbxts/types": "catalog:",
 		"shx": "catalog:"
 	},
 	"peerDependencies": {

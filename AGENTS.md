@@ -1,42 +1,42 @@
 # Agent Instructions
 
-## Project Overview
-- `constant` is a Roblox-TS monorepo for live-editable constants.
-- It includes a runtime library, a Studio plugin bridge, and test places for both.
-- The plugin syncs constant updates to JSON files through `io-serve`.
+- Use `./.tmp/` for temp files. No OS temp.
+- Use **pnpm** for package management and `./scripts/build.mjs` scopes
+  (`all`, `packages`, `test`) for builds.
+- AI commits MUST include a `Co-Authored-By:` attribution line.
 
-## Package Manager
-- Use **pnpm**: `pnpm install`, `pnpm build`, `pnpm test`, `pnpm --filter <pkg> build`
+## Setup
 
-## Commit Attribution
-- AI commits MUST include:
-```
-Co-Authored-By: Dirac <noreply@example.com>
+```bash
+pnpm setup
 ```
 
-## File-Scoped Commands
-| Task | Command |
-|------|---------|
-| Build runtime package | `pnpm --filter @lisachandra/constant build` |
-| Build plugin package | `pnpm --filter @lisachandra/plugin build` |
-| Build installable plugin artifact | `pnpm --filter @lisachandra/plugin build:plugin` |
-| Build constant test place | `pnpm --filter @lisachandra/test-constant build` |
-| Build plugin test place | `pnpm --filter @lisachandra/test-plugin build` |
-| Run constant tests | `pnpm --filter @lisachandra/test-constant test` |
-| Run plugin tests | `pnpm --filter @lisachandra/test-plugin test` |
+## Commands
 
-## Monorepo Layout
-- `packages/constant`: runtime library
-- `packages/plugin`: Studio plugin package and bridge runtime
-- `test/constant`: runtime test place
-- `test/plugin`: plugin test place
-- `docs/superpowers/specs`: design specs
+| Task           | Command               |
+| -------------- | --------------------- |
+| Build all      | `pnpm build`          |
+| Build packages | `pnpm build:packages` |
+| Build tests    | `pnpm build:test`     |
+| Dev (watch)    | `pnpm dev`            |
+| Lint           | `pnpm lint:fix`       |
+| Typecheck      | `pnpm typecheck`      |
+| Test           | `pnpm test`           |
+| Changeset      | `pnpm changeset`      |
+| Version        | `pnpm version`        |
+| Release        | `pnpm release`        |
 
-## Key Conventions
-- Keep `roblox-ts` source in `src/`; compiled output belongs in `out/`.
-- Keep client and server persistence outputs scoped separately.
-- Public TS APIs should follow the TSDoc policy in `.diracrules/rules/documentation.md`.
-- Use real `@rbxts/iris` API names: `InputColor3`, `InputVector3`, `InputNum`, `SliderNum`, `Checkbox`, `InputText`.
-- Pair `Iris.Window(...)` with `Iris.End()` and `Iris.PushId(id)` with `Iris.PopId(id)`.
-- Guard live-edit and Studio-only behavior behind Studio/plugin context checks.
-- For plugin work, verify both package build and generated `.rbxm` artifact shape.
+## Verification
+
+Run `pnpm lint:fix`, `pnpm typecheck`, `pnpm build`, and `pnpm test` (or the
+relevant test package's `pnpm test` with a path pattern). Report exact
+tests/tools run and blockers.
+
+## Project Conventions
+
+- Packages live in `packages/<name>` and their test projects in `test/<name>`.
+- Package names are `@lisachandra/<name>`; test packages are
+  `@lisachandra/test-<name>` and private.
+- Workspace deps use `workspace:*`; tooling versions come from the pnpm
+  catalog in `pnpm-workspace.yaml`.
+- Release notes are changesets; every user-facing change gets one.

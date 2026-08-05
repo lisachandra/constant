@@ -1,36 +1,43 @@
-import { describe, expect, jest, test } from "@rbxts/jest-globals";
-import { createMockInstance, getModuleByTree, mockOnRuntime } from "@lisachandra/test/out/utils";
-
-const servicesModule = getModuleByTree(...$getModuleTree("@rbxts/services"));
-let mockServices: ReturnType<typeof mockOnRuntime<typeof import("@rbxts/services")>>;
-
-jest.mock<typeof import("@rbxts/services")>(servicesModule, () => {
-	const originalServices: typeof import("@rbxts/services") =
-		jest.requireActual(servicesModule);
-
-	mockServices ??= mockOnRuntime(jest, createMockInstance(originalServices));
-	return mockServices as never;
-});
-
-import { HttpService } from "@rbxts/services";
+import { getMember } from "@lisachandra/core/utils/type";
 import {
 	buildIoServeWriteUrl,
 	createConstantPluginCoordinator,
 	createHttpIoServeWriter,
 	encodePersistedConstantFile,
 } from "@lisachandra/plugin";
-import { getMember } from "@lisachandra/core/out/utils/type"
+import { createMockInstance, getModuleByTree, mockOnRuntime } from "@lisachandra/test/utils";
+import { describe, expect, it, jest } from "@rbxts/jest-globals";
+import { HttpService } from "@rbxts/services";
+
+const servicesModule = getModuleByTree(...$getModuleTree("@rbxts/services"));
+let mockServices: ReturnType<typeof mockOnRuntime<typeof import("@rbxts/services")>>;
+
+jest.mock<typeof import("@rbxts/services")>(servicesModule, () => {
+	const originalServices: typeof import("@rbxts/services") = jest.requireActual(servicesModule);
+
+	mockServices = mockOnRuntime(jest, createMockInstance(originalServices));
+	return mockServices as never;
+});
 
 describe("end-to-end persistence", () => {
-	test("coordinator writes through http writer with mocked request", () => {
-		const calls = new Array<{ url: string; method: string; body: string }>();
-		const mockRequestAsync = jest.fn((_self: unknown, options: { Url: string; Method: string; Body: string }) => {
-			calls.push({ url: options.Url, method: options.Method, body: options.Body });
-			return { Success: true, StatusCode: 200, StatusMessage: "OK" };
+	it("should coordinator writes through http writer with mocked request", () => {
+		expect.hasAssertions();
+
+		const calls = new Array<{ body: string; method: string; url: string }>();
+		const [mockRequestAsync] = jest.fn(function (
+			this: HttpService,
+			options: RequestAsyncRequest,
+		): RequestAsyncResponse {
+			calls.push({
+				body: options.Body ?? "",
+				method: options.Method ?? "",
+				url: tostring(options.Url),
+			});
+			return { Body: "", Headers: {}, StatusCode: 200, StatusMessage: "OK", Success: true };
 		});
 
-		let requestAsync = getMember(HttpService, "RequestAsync")
-		HttpService.RequestAsync = mockRequestAsync
+		let requestAsync = getMember(HttpService, "RequestAsync");
+		HttpService.RequestAsync = mockRequestAsync;
 
 		const event = new Instance("BindableEvent");
 		const coordinator = createConstantPluginCoordinator(
@@ -39,10 +46,10 @@ describe("end-to-end persistence", () => {
 		);
 
 		event.Fire({
-			scope: "client",
 			name: "WALK_SPEED",
-			serializedValue: 24,
+			scope: "client",
 			serializedDefault: 16,
+			serializedValue: 24,
 			sourcePath: "src/client/main.ts",
 		});
 
@@ -58,18 +65,27 @@ describe("end-to-end persistence", () => {
 		coordinator.disconnect();
 		event.Destroy();
 
-		HttpService.RequestAsync = requestAsync
+		HttpService.RequestAsync = requestAsync;
 	});
 
-	test("coordinator writes multiple scopes through separate http requests", () => {
-		const calls = new Array<{ url: string; method: string; body: string }>();
-		const mockRequestAsync = jest.fn((_self: unknown, options: { Url: string; Method: string; Body: string }) => {
-			calls.push({ url: options.Url, method: options.Method, body: options.Body });
-			return { Success: true, StatusCode: 200, StatusMessage: "OK" };
+	it("should coordinator writes multiple scopes through separate http requests", () => {
+		expect.hasAssertions();
+
+		const calls = new Array<{ body: string; method: string; url: string }>();
+		const [mockRequestAsync] = jest.fn(function (
+			this: HttpService,
+			options: RequestAsyncRequest,
+		): RequestAsyncResponse {
+			calls.push({
+				body: options.Body ?? "",
+				method: options.Method ?? "",
+				url: tostring(options.Url),
+			});
+			return { Body: "", Headers: {}, StatusCode: 200, StatusMessage: "OK", Success: true };
 		});
 
-		let requestAsync = getMember(HttpService, "RequestAsync")
-		HttpService.RequestAsync = mockRequestAsync
+		let requestAsync = getMember(HttpService, "RequestAsync");
+		HttpService.RequestAsync = mockRequestAsync;
 
 		const event = new Instance("BindableEvent");
 		const coordinator = createConstantPluginCoordinator(
@@ -78,26 +94,32 @@ describe("end-to-end persistence", () => {
 		);
 
 		event.Fire({
-			scope: "client",
 			name: "WALK_SPEED",
-			serializedValue: 30,
+			scope: "client",
 			serializedDefault: 16,
+			serializedValue: 30,
 			sourcePath: "src/client/game.ts",
 		});
 
 		event.Fire({
-			scope: "server",
 			name: "DEBUG",
-			serializedValue: true,
+			scope: "server",
 			serializedDefault: false,
+			serializedValue: true,
 			sourcePath: "src/server/game.ts",
 		});
 
 		task.wait(0.1);
 
 		expect(calls.size()).toBe(2);
-		const clientCall = calls.find((c) => c.url === "http://test:33333/src/client/constants.json");
-		const serverCall = calls.find((c) => c.url === "http://test:33333/src/server/constants.json");
+
+		const clientCall = calls.find(
+			(c) => c.url === "http://test:33333/src/client/constants.json",
+		);
+		const serverCall = calls.find(
+			(c) => c.url === "http://test:33333/src/server/constants.json",
+		);
+
 		expect(clientCall).toBeDefined();
 		expect(serverCall).toBeDefined();
 		expect(clientCall!.body).toContain("30");
@@ -106,54 +128,66 @@ describe("end-to-end persistence", () => {
 		coordinator.disconnect();
 		event.Destroy();
 
-		HttpService.RequestAsync = requestAsync
+		HttpService.RequestAsync = requestAsync;
 	});
 
-	test("flushAll writes all scopes through http writer", () => {
-		const calls = new Array<{ url: string; body: string }>();
-		const mockRequestAsync = jest.fn((_self: unknown, options: { Url: string; Body: string }) => {
-			calls.push({ url: options.Url, body: options.Body });
-			return { Success: true, StatusCode: 200, StatusMessage: "OK" };
+	it("should flushAll writes all scopes through http writer", () => {
+		expect.hasAssertions();
+
+		const calls = new Array<{ body: string; url: string }>();
+		const [mockRequestAsync] = jest.fn(function (
+			this: HttpService,
+			options: RequestAsyncRequest,
+		): RequestAsyncResponse {
+			calls.push({ body: options.Body ?? "", url: tostring(options.Url) });
+			return { Body: "", Headers: {}, StatusCode: 200, StatusMessage: "OK", Success: true };
 		});
 
-		let requestAsync = getMember(HttpService, "RequestAsync")
-		HttpService.RequestAsync = mockRequestAsync
+		let requestAsync = getMember(HttpService, "RequestAsync");
+		HttpService.RequestAsync = mockRequestAsync;
 
 		const event = new Instance("BindableEvent");
 		const coordinator = createConstantPluginCoordinator(
 			createHttpIoServeWriter("http://test:33333"),
-			{ event, autoFlush: false },
+			{ autoFlush: false, event },
 		);
 
 		event.Fire({
-			scope: "client",
 			name: "WALK_SPEED",
-			serializedValue: 24,
+			scope: "client",
 			serializedDefault: 16,
+			serializedValue: 24,
 			sourcePath: "src/client/main.ts",
 		});
 
 		task.wait(0.1);
+
 		expect(calls.size()).toBe(0);
 
 		coordinator.flushAll();
 		task.wait(0.1);
 
 		expect(calls.size()).toBe(2);
-		const clientCall = calls.find((c) => c.url === "http://test:33333/src/client/constants.json");
+
+		const clientCall = calls.find(
+			(c) => c.url === "http://test:33333/src/client/constants.json",
+		);
+
 		expect(clientCall).toBeDefined();
 
 		coordinator.disconnect();
 		event.Destroy();
 
-		HttpService.RequestAsync = requestAsync
+		HttpService.RequestAsync = requestAsync;
 	});
 
-	test("encodePersistedConstantFile shapes persistence data", () => {
+	it("should encodePersistedConstantFile shapes persistence data", () => {
+		expect.hasAssertions();
+
 		const json = encodePersistedConstantFile({
 			"src/client/main.ts": {
-				WALK_SPEED: 24,
 				_defaults: { WALK_SPEED: 16 },
+				WALK_SPEED: 24,
 			},
 		});
 
@@ -163,10 +197,14 @@ describe("end-to-end persistence", () => {
 		expect(json).toContain("16");
 	});
 
-	test("buildIoServeWriteUrl normalises slashes", () => {
-		expect(buildIoServeWriteUrl("http://localhost:33333", "src/client/constants.json"))
-			.toBe("http://localhost:33333/src/client/constants.json");
-		expect(buildIoServeWriteUrl("http://localhost:33333/", "/src/server/constants.json"))
-			.toBe("http://localhost:33333/src/server/constants.json");
+	it("should normalize slashes when building io-serve write urls", () => {
+		expect.hasAssertions();
+
+		expect(buildIoServeWriteUrl("http://localhost:33333", "src/client/constants.json")).toBe(
+			"http://localhost:33333/src/client/constants.json",
+		);
+		expect(buildIoServeWriteUrl("http://localhost:33333/", "/src/server/constants.json")).toBe(
+			"http://localhost:33333/src/server/constants.json",
+		);
 	});
 });

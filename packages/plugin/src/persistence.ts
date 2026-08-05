@@ -3,14 +3,13 @@ import type {
 	ConstantUpdatePayload,
 	PersistedConstantFile,
 	PersistedConstantGroup,
-	SerializedConstant,
 } from "@lisachandra/constant-protocol";
 
 export type {
 	ConstantScope,
-	SerializedConstant,
-	PersistedConstantGroup,
 	PersistedConstantFile,
+	PersistedConstantGroup,
+	SerializedConstant,
 } from "@lisachandra/constant-protocol";
 
 export type ConstantPluginUpdateRequest = ConstantUpdatePayload;
@@ -28,12 +27,10 @@ export function applyConstantUpdate(
 	request: ConstantPluginUpdateRequest,
 ): PersistedConstantFile {
 	const currentGroup = current[request.sourcePath] ?? {};
-	const nextGroup: PersistedConstantGroup = {
-		...currentGroup,
-		_defaults: { ...(currentGroup._defaults ?? {}) },
-	};
-	nextGroup[request.name] = request.serializedValue as SerializedConstant;
-	nextGroup._defaults![request.name] = request.serializedDefault as SerializedConstant;
+	const defaults = { ...(currentGroup._defaults ?? {}) };
+	const nextGroup: PersistedConstantGroup = { ...currentGroup, _defaults: defaults };
+	nextGroup[request.name] = request.serializedValue;
+	defaults[request.name] = request.serializedDefault;
 	return {
 		...current,
 		[request.sourcePath]: nextGroup,

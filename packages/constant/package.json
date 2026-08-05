@@ -1,56 +1,69 @@
 {
 	"name": "@lisachandra/constant",
 	"version": "0.3.0",
+	"private": false,
 	"description": "Strongly-typed, chainable runtime constants with JSON persistence and Studio Iris editing for roblox-ts.",
-	"keywords": ["roblox", "rbxts", "constants", "configuration", "iris"],
+	"keywords": [
+		"configuration",
+		"constants",
+		"iris",
+		"rbxts",
+		"roblox"
+	],
 	"homepage": "https://github.com/lisachandra/constant",
 	"bugs": {
 		"url": "https://github.com/lisachandra/constant/issues"
 	},
-	"repository": {
-		"url": "https://github.com/lisachandra/constant",
-		"type": "git"
-	},
 	"license": "MIT",
 	"author": "lisachandra <lisachandra@proton.me>",
-	"private": false,
-	"type": "module",
-	"exports": {
-		".": {
-			"source": "./src/index.ts",
-			"import": "./out/init.luau",
-			"types": "./out/index.d.ts"
-		}
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/lisachandra/constant"
 	},
+	"files": [
+		"out",
+		"default.project.json",
+		"!**/*.tsbuildinfo"
+	],
+	"type": "module",
 	"main": "out/init.luau",
 	"types": "out/index.d.ts",
-	"files": ["out", "default.project.json", "!**/*.tsbuildinfo"],
+	"exports": {
+		".": {
+			"import": "./out/init.luau",
+			"types": "./out/index.d.ts"
+		},
+		"./transport": {
+			"import": "./out/transport.luau",
+			"types": "./out/transport.d.ts"
+		}
+	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"prepare": "pnpm run build",
 		"build": "rbxtsc --verbose --allowCommentDirectives",
 		"dev": "rbxtsc --watch --allowCommentDirectives",
 		"clean": "shx rm -rf out"
 	},
-	"devDependencies": {
-		"roblox-ts": "catalog:",
-		"@isentinel/tsconfig": "catalog:",
-		"@rbxts/compiler-types": "catalog:",
-		"@lisachandra/types": "catalog:",
-		"@rbxts/types": "catalog:",
-		"@rbxts/services": "catalog:",
-		"@rbxts/luau-polyfill": "catalog:",
-		"@rbxts/iris": "catalog:",
-		"shx": "catalog:"
-	},
-	"peerDependencies": {
-		"@rbxts/services": "*",
-		"@rbxts/luau-polyfill": "*",
-		"@rbxts/iris": "*"
-	},
 	"dependencies": {
 		"@lisachandra/constant-protocol": "workspace:*"
 	},
-	"publishConfig": {
-		"access": "public"
+	"devDependencies": {
+		"@isentinel/roblox-ts": "catalog:",
+		"@isentinel/tsconfig": "catalog:",
+		"@lisachandra/types": "catalog:",
+		"@rbxts/compiler-types": "catalog:",
+		"@rbxts/iris": "catalog:",
+		"@rbxts/luau-polyfill": "catalog:",
+		"@rbxts/services": "catalog:",
+		"@rbxts/types": "catalog:",
+		"shx": "catalog:"
+	},
+	"peerDependencies": {
+		"@rbxts/iris": "*",
+		"@rbxts/luau-polyfill": "*",
+		"@rbxts/services": "*"
 	}
 }

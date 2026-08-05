@@ -1,33 +1,39 @@
 {
 	"name": "@lisachandra/test-constant",
 	"version": "0.0.0",
-	"description": "Runtime test place for validating constant builder, persistence, and live-edit behavior.",
-	"keywords": ["roblox", "rbxts", "test", "constants", "jest-roblox"],
 	"private": true,
+	"description": "Runtime test place for validating constant builder, persistence, and live-edit behavior.",
+	"keywords": [
+		"constants",
+		"jest-roblox",
+		"rbxts",
+		"roblox",
+		"test"
+	],
 	"type": "module",
 	"scripts": {
 		"build": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --verbose --allowCommentDirectives",
 		"dev": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --watch --allowCommentDirectives",
-		"test": "pnpm exec jest-roblox"
+		"test": "pnpm exec jest-roblox ./jest.config.ts"
+	},
+	"dependencies": {
+		"@lisachandra/constant": "workspace:*",
+		"@lisachandra/constant-protocol": "workspace:*",
+		"@lisachandra/core": "catalog:",
+		"@lisachandra/test": "catalog:",
+		"@lisachandra/types": "catalog:",
+		"@rbxts/jest": "catalog:",
+		"@rbxts/jest-globals": "catalog:",
+		"@rbxts/services": "catalog:"
 	},
 	"devDependencies": {
 		"@isentinel/jest-roblox": "catalog:",
-		"roblox-ts": "catalog:",
+		"@isentinel/roblox-ts": "catalog:",
 		"@isentinel/tsconfig": "catalog:",
 		"@rbxts/compiler-types": "catalog:",
 		"@rbxts/types": "catalog:",
 		"io-serve": "catalog:",
 		"shx": "catalog:",
 		"typescript": "catalog:"
-	},
-	"dependencies": {
-		"@lisachandra/constant-protocol": "workspace:*",
-		"@rbxts/services": "catalog:",
-		"@rbxts/jest": "catalog:",
-		"@rbxts/jest-globals": "catalog:",
-		"@lisachandra/types": "catalog:",
-		"@lisachandra/test": "catalog:",
-		"@lisachandra/core": "catalog:",
-		"@lisachandra/constant": "workspace:*"
 	}
 }

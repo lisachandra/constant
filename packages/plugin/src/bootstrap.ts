@@ -1,6 +1,10 @@
-import { createConstantPluginCoordinator, type ConstantPluginCoordinator, type ConstantPluginCoordinatorOptions } from "./coordinator";
-import { createHttpIoServeWriter } from "./writer";
+import {
+	type ConstantPluginCoordinator,
+	type ConstantPluginCoordinatorOptions,
+	createConstantPluginCoordinator,
+} from "./coordinator";
 import type { ConstantScope, PersistedConstantFile } from "./persistence";
+import { createHttpIoServeWriter } from "./writer";
 
 export interface ConstantPluginBootstrapOptions extends ConstantPluginCoordinatorOptions {
 	baseUrl?: string;
@@ -12,7 +16,9 @@ export interface ConstantPluginBootstrapHandle {
 	stop(): void;
 }
 
-export function startConstantPluginBootstrap(options: ConstantPluginBootstrapOptions = {}): ConstantPluginBootstrapHandle {
+export function startConstantPluginBootstrap(
+	options: ConstantPluginBootstrapOptions = {},
+): ConstantPluginBootstrapHandle {
 	const writer = createHttpIoServeWriter(options.baseUrl);
 	const coordinator = createConstantPluginCoordinator(writer, options);
 

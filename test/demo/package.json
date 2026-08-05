@@ -1,9 +1,16 @@
 {
 	"name": "@lisachandra/test-demo",
 	"version": "0.0.0",
-	"description": "Combined manual verification place for exercising constant runtime, Studio editors, and plugin persistence flows.",
-	"keywords": ["roblox", "rbxts", "demo", "constants", "plugin", "io-serve"],
 	"private": true,
+	"description": "Combined manual verification place for exercising constant runtime, Studio editors, and plugin persistence flows.",
+	"keywords": [
+		"constants",
+		"demo",
+		"io-serve",
+		"plugin",
+		"rbxts",
+		"roblox"
+	],
 	"type": "module",
 	"scripts": {
 		"build": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --verbose --allowCommentDirectives",
@@ -13,19 +20,19 @@
 		"serve:sourcemap": "rojo sourcemap --watch default.project.json --output sourcemap.json",
 		"serve:rojo": "rojo serve default.project.json"
 	},
+	"dependencies": {
+		"@lisachandra/constant": "workspace:*",
+		"@lisachandra/plugin": "workspace:*",
+		"@lisachandra/types": "catalog:",
+		"@rbxts/services": "catalog:"
+	},
 	"devDependencies": {
-		"roblox-ts": "catalog:",
+		"@isentinel/roblox-ts": "catalog:",
 		"@isentinel/tsconfig": "catalog:",
 		"@rbxts/compiler-types": "catalog:",
 		"@rbxts/types": "catalog:",
 		"io-serve": "catalog:",
 		"shx": "catalog:",
 		"typescript": "catalog:"
-	},
-	"dependencies": {
-		"@lisachandra/types": "catalog:",
-		"@lisachandra/constant": "workspace:*",
-		"@lisachandra/plugin": "workspace:*",
-		"@rbxts/services": "catalog:"
 	}
 }

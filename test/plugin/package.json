@@ -1,34 +1,40 @@
 {
 	"name": "@lisachandra/test-plugin",
 	"version": "0.0.0",
-	"description": "Plugin test place for validating constant Studio bridge and io-serve integration.",
-	"keywords": ["roblox", "rbxts", "test", "plugin", "io-serve"],
 	"private": true,
+	"description": "Plugin test place for validating constant Studio bridge and io-serve integration.",
+	"keywords": [
+		"io-serve",
+		"plugin",
+		"rbxts",
+		"roblox",
+		"test"
+	],
 	"type": "module",
 	"scripts": {
 		"build": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --verbose --allowCommentDirectives",
 		"dev": "rbxtsc --type game --includePath node_modules/@lisachandra/types/out/include --noInclude --watch --allowCommentDirectives",
-		"test": "pnpm exec jest-roblox"
+		"test": "pnpm exec jest-roblox ./jest.config.ts"
+	},
+	"dependencies": {
+		"@lisachandra/constant": "workspace:*",
+		"@lisachandra/constant-protocol": "workspace:*",
+		"@lisachandra/core": "catalog:",
+		"@lisachandra/plugin": "workspace:*",
+		"@lisachandra/test": "catalog:",
+		"@lisachandra/types": "catalog:",
+		"@rbxts/jest": "catalog:",
+		"@rbxts/jest-globals": "catalog:",
+		"@rbxts/services": "catalog:"
 	},
 	"devDependencies": {
 		"@isentinel/jest-roblox": "catalog:",
-		"roblox-ts": "catalog:",
+		"@isentinel/roblox-ts": "catalog:",
 		"@isentinel/tsconfig": "catalog:",
 		"@rbxts/compiler-types": "catalog:",
 		"@rbxts/types": "catalog:",
 		"io-serve": "catalog:",
 		"shx": "catalog:",
 		"typescript": "catalog:"
-	},
-	"dependencies": {
-		"@lisachandra/constant-protocol": "workspace:*",
-		"@lisachandra/types": "catalog:",
-		"@lisachandra/test": "catalog:",
-		"@lisachandra/core": "catalog:",
-		"@lisachandra/constant": "workspace:*",
-		"@lisachandra/plugin": "workspace:*",
-		"@rbxts/services": "catalog:",
-		"@rbxts/jest": "catalog:",
-		"@rbxts/jest-globals": "catalog:"
 	}
 }

@@ -1,0 +1,15 @@
+{
+	"extends": ["./tsconfig.json", "@isentinel/tsconfig/typescript"],
+	"compilerOptions": {
+		"tsBuildInfoFile": "${configDir}/tsconfig.node.tsbuildinfo",
+		"noLib": false,
+		"rootDir": "${configDir}",
+		"typeRoots": ["./node_modules/@types"],
+		"types": ["node"],
+		"noEmit": false,
+		"customConditions": []
+	},
+	"files": [],
+	"include": ["**/*.config.ts", "jest.shared.ts"],
+	"exclude": ["node_modules", "out", "build", "coverage"]
+}

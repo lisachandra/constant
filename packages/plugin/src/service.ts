@@ -1,10 +1,10 @@
 import {
 	applyConstantUpdate,
-	getConstantsFilePath,
-	resolveConstantsFilePath,
 	type ConstantPluginUpdateRequest,
 	type ConstantScope,
+	getConstantsFilePath,
 	type PersistedConstantFile,
+	resolveConstantsFilePath,
 } from "./persistence";
 
 export interface ConstantPersistenceWriter {
@@ -12,10 +12,10 @@ export interface ConstantPersistenceWriter {
 }
 
 export interface ConstantPluginPersistenceService {
-	receiveUpdate(request: ConstantPluginUpdateRequest): PersistedConstantFile;
-	getSnapshot(scope: ConstantScope): PersistedConstantFile;
-	flushScope(scope: ConstantScope): void;
 	flushAll(): void;
+	flushScope(scope: ConstantScope): void;
+	getSnapshot(scope: ConstantScope): PersistedConstantFile;
+	receiveUpdate(request: ConstantPluginUpdateRequest): PersistedConstantFile;
 }
 
 export function createConstantPluginPersistenceService(

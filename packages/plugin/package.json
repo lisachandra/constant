@@ -1,30 +1,50 @@
 {
 	"name": "@lisachandra/plugin",
 	"version": "0.2.0",
+	"private": true,
 	"description": "Studio plugin bridge for syncing live constant edits to JSON files through io-serve.",
-	"keywords": ["roblox", "rbxts", "plugin", "constants", "io-serve"],
+	"keywords": [
+		"constants",
+		"io-serve",
+		"plugin",
+		"rbxts",
+		"roblox"
+	],
 	"homepage": "https://github.com/lisachandra/constant",
 	"bugs": {
 		"url": "https://github.com/lisachandra/constant/issues"
 	},
-	"repository": {
-		"url": "https://github.com/lisachandra/constant",
-		"type": "git"
-	},
 	"license": "MIT",
 	"author": "lisachandra <lisachandra@proton.me>",
-	"private": true,
-	"type": "module",
-	"exports": {
-		".": {
-			"source": "./src/index.ts",
-			"import": "./out/init.luau",
-			"types": "./out/index.d.ts"
-		}
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/lisachandra/constant"
 	},
+	"files": [
+		"out",
+		"default.project.json",
+		"!**/*.tsbuildinfo"
+	],
+	"type": "module",
 	"main": "out/init.luau",
 	"types": "out/index.d.ts",
-	"files": ["out", "default.project.json", "!**/*.tsbuildinfo"],
+	"exports": {
+		".": {
+			"import": "./out/init.luau",
+			"types": "./out/index.d.ts"
+		},
+		"./coordinator": {
+			"import": "./out/coordinator.luau",
+			"types": "./out/coordinator.d.ts"
+		},
+		"./studio-state": {
+			"import": "./out/studioState.luau",
+			"types": "./out/studioState.d.ts"
+		}
+	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"prepare": "pnpm run build",
 		"build:plugin": "pnpm run build && rojo build plugin.project.json --output ../../constant.rbxm",
@@ -32,22 +52,19 @@
 		"dev": "rbxtsc --watch --allowCommentDirectives",
 		"clean": "shx rm -rf out"
 	},
+	"dependencies": {
+		"@lisachandra/constant-protocol": "workspace:*"
+	},
 	"devDependencies": {
-		"roblox-ts": "catalog:",
-		"@lisachandra/types": "catalog:",
+		"@isentinel/roblox-ts": "catalog:",
 		"@isentinel/tsconfig": "catalog:",
+		"@lisachandra/types": "catalog:",
 		"@rbxts/compiler-types": "catalog:",
-		"@rbxts/types": "catalog:",
 		"@rbxts/services": "catalog:",
+		"@rbxts/types": "catalog:",
 		"shx": "catalog:"
 	},
 	"peerDependencies": {
 		"@rbxts/services": "*"
-	},
-	"dependencies": {
-		"@lisachandra/constant-protocol": "workspace:*"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

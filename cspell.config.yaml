@@ -1,0 +1,34 @@
+# yaml-language-server:
+# $schema=https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json
+
+version: "0.2"
+language: en
+
+import:
+    - "@isentinel/dict-roblox"
+    - "@isentinel/dict-rbxts"
+
+words:
+    - deepseek
+    - diracrules
+    - gsub
+    - indegree
+    - isentinel
+    - lisachandra
+    - mklink
+    - oxfmt
+    - oxlint
+    - pcall
+    - rbxl
+    - rbxtsc
+    - rbxasset
+    - renderable
+    - rojo
+    - tsgolint
+    - tsgo
+    - vító
+    - vitória
+    - worktree
+    - worktrees
+    - xhigh
+    - zcode

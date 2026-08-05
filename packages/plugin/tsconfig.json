@@ -5,7 +5,7 @@
 			"../@rbxts/types/plugin",
 			"../@rbxts/services/plugin",
 			"../@rbxts/compiler-types",
-			"../@lisachandra/types",
-		],
-	},
+			"../@lisachandra/types"
+		]
+	}
 }

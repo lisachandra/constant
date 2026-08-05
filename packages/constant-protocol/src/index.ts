@@ -1,8 +1,8 @@
 import { ReplicatedStorage } from "@rbxts/services";
 
 /**
- * Name of the BindableEvent that carries persist-intent payloads from the
- * constant runtime to the Studio plugin bridge.
+ * Name of the BindableEvent that carries persist-intent payloads from the constant runtime to the
+ * Studio plugin bridge.
  */
 export const CONSTANT_TRANSPORT_EVENT_NAME = "Constant";
 
@@ -13,36 +13,54 @@ export type SerializedConstant =
 	| string
 	| boolean
 	| undefined
+	| { enum: string; item: string; type: "EnumItem" }
 	| { type: "Color3"; value: [number, number, number] }
 	| { type: "Vector3"; value: [number, number, number] }
-	| { type: "CFrame"; value: [number, number, number, number, number, number, number, number, number, number, number, number] }
-	| { type: "EnumItem"; enum: string; item: string };
+	| {
+			type: "CFrame";
+			value: [
+				number,
+				number,
+				number,
+				number,
+				number,
+				number,
+				number,
+				number,
+				number,
+				number,
+				number,
+				number,
+			];
+	  };
 
 export interface PersistedConstantGroup {
+	[name: string]: undefined | SerializedConstant | Record<string, SerializedConstant>;
 	_defaults?: Record<string, SerializedConstant>;
-	[name: string]: SerializedConstant | Record<string, SerializedConstant> | undefined;
 }
 
-export interface PersistedConstantFile {
-	[sourcePath: string]: PersistedConstantGroup | undefined;
-}
+export type PersistedConstantFile = Record<string, undefined | PersistedConstantGroup>;
 
 export interface ConstantUpdatePayload {
-	scope: ConstantScope;
 	name: string;
-	serializedValue: SerializedConstant;
-	serializedDefault: SerializedConstant;
-	sourcePath: string;
 	persistPath?: string;
+	scope: ConstantScope;
+	serializedDefault: SerializedConstant;
+	serializedValue: SerializedConstant;
+	sourcePath: string;
 }
 
 /**
  * Type guard for {@link ConstantUpdatePayload} received over the transport.
+ *
  * @param value - Value received from a BindableEvent or RemoteEvent.
  * @returns `true` when the value has the payload shape.
  */
 export function isConstantUpdatePayload(value: unknown): value is ConstantUpdatePayload {
-	if (!typeIs(value, "table")) return false;
+	if (!typeIs(value, "table")) {
+		return false;
+	}
+
 	const payload = value as Partial<ConstantUpdatePayload>;
 	return (
 		(payload.scope === "client" || payload.scope === "server") &&
@@ -56,12 +74,17 @@ export function isConstantUpdatePayload(value: unknown): value is ConstantUpdate
 
 /**
  * Returns the shared transport BindableEvent, creating it when missing.
+ *
  * @param parent - Instance that hosts the event; defaults to ReplicatedStorage.
  * @returns The existing or newly created BindableEvent.
  */
-export function getOrCreateBindableTransportEvent(parent: Instance = ReplicatedStorage): BindableEvent {
+export function getOrCreateBindableTransportEvent(
+	parent: Instance = ReplicatedStorage,
+): BindableEvent {
 	const existing = parent.FindFirstChild(CONSTANT_TRANSPORT_EVENT_NAME);
-	if (existing?.IsA("BindableEvent")) return existing;
+	if (existing?.IsA("BindableEvent") === true) {
+		return existing;
+	}
 
 	const event = new Instance("BindableEvent");
 	event.Name = CONSTANT_TRANSPORT_EVENT_NAME;

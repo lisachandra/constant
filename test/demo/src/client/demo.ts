@@ -1,7 +1,8 @@
 import { Players, RunService } from "@rbxts/services";
+
+import { LABEL_GUI_NAME, roundTenth } from "../shared/demoState";
 import { constants as firstConstants } from "./folder/first";
 import { constants as secondConstants } from "./folder/second";
-import { LABEL_GUI_NAME, roundTenth } from "../shared/demo-state";
 
 const first = firstConstants.build();
 const second = secondConstants.build();
@@ -9,7 +10,9 @@ const second = secondConstants.build();
 function applyCharacterDemoState(character: Model): void {
 	const humanoid = character.FindFirstChildOfClass("Humanoid");
 	const head = character.FindFirstChild("Head");
-	if (!humanoid || !head || !head.IsA("BasePart")) return;
+	if (!humanoid || !head || !head.IsA("BasePart")) {
+		return;
+	}
 
 	humanoid.WalkSpeed = first.WALK_SPEED;
 
@@ -44,7 +47,7 @@ function applyCharacterDemoState(character: Model): void {
 RunService.Heartbeat.Connect(() => {
 	for (const player of Players.GetPlayers()) {
 		if (player.Character) {
-			applyCharacterDemoState(player.Character)
+			applyCharacterDemoState(player.Character);
 		}
 	}
-})
+});

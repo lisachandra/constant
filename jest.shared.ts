@@ -1,17 +1,20 @@
 import { defineConfig } from "@isentinel/jest-roblox";
 
+const isCi = process.env["CI"] !== undefined && process.env["CI"] !== "";
+
 export default defineConfig({
-	backend: "studio-cli",
+	backend: isCi ? "open-cloud" : "studio-cli",
 	gameOutput: "game-output.log",
-	jestPath: "ReplicatedStorage/rbxts_include/node_modules/@rbxts/jest/src",
+	jestPath: "ReplicatedStorage/TS/rbxts_include/node_modules/@rbxts/jest/src",
 	outputFile: "jest-output.log",
 	placeFile: "test.rbxl",
-	rojoProject: "default.project.json",
-	timeout: 300000,
 	test: {
 		clearMocks: true,
-		coveragePathIgnorePatterns: ["**/test/**", "**/index.ts"],
-		setupFiles: ["@lisachandra/test/out/setup"],
-		testTimeout: 5000,
+		collectCoverage: true,
+		coveragePathIgnorePatterns: ["**/*.spec.ts", "**/*.spec.tsx"],
+		mockDataModel: false,
+		runInBand: true,
+		testTimeout: isCi ? 600_000 : 300_000,
 	},
+	timeout: isCi ? 600_000 : 300_000,
 });
