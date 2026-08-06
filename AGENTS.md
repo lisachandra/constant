@@ -46,8 +46,8 @@ Co-Authored-By: (the agent's name and attribution byline)
 
 - `pnpm lint:fix`, `pnpm typecheck`, `pnpm build`
 - Always use the most efficient test option:
-  - selective tests: `pnpm --filter @lisachandra/test-<name> test --testPathPattern <pattern>`
-  - all tests: `pnpm test`
+    - selective tests: `pnpm --filter @lisachandra/test-<name> test --testPathPattern <pattern>`
+    - all tests: `pnpm test`
 - Report exact tests/tools run and blockers.
 
 ## Project Conventions
