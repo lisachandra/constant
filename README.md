@@ -74,20 +74,20 @@ Values are nested by source path so multiple scripts can contribute to the same 
 
 ```json
 {
-  "src/client/main.client.ts": {
-    "WALK_SPEED": 16,
-    "_defaults": {
-      "WALK_SPEED": 16
-    }
-  },
-  "src/client/folder/second.client.ts": {
-    "DEBUG_RAYCASTS": true,
-    "THEME_COLOR": { "type": "Color3", "value": [0, 0.667, 1] },
-    "_defaults": {
-      "DEBUG_RAYCASTS": true,
-      "THEME_COLOR": { "type": "Color3", "value": [0, 0.667, 1] }
-    }
-  }
+	"src/client/main.client.ts": {
+		"WALK_SPEED": 16,
+		"_defaults": {
+			"WALK_SPEED": 16
+		}
+	},
+	"src/client/folder/second.client.ts": {
+		"DEBUG_RAYCASTS": true,
+		"THEME_COLOR": { "type": "Color3", "value": [0, 0.667, 1] },
+		"_defaults": {
+			"DEBUG_RAYCASTS": true,
+			"THEME_COLOR": { "type": "Color3", "value": [0, 0.667, 1] }
+		}
+	}
 }
 ```
 
@@ -95,8 +95,8 @@ Tagged Roblox values are stored as objects:
 
 ```json
 {
-  "THEME_COLOR": { "type": "Color3", "value": [1, 0, 0] },
-  "SPAWN_OFFSET": { "type": "Vector3", "value": [0, 5, 0] }
+	"THEME_COLOR": { "type": "Color3", "value": [1, 0, 0] },
+	"SPAWN_OFFSET": { "type": "Vector3", "value": [0, 5, 0] }
 }
 ```
 
@@ -119,9 +119,7 @@ Editor modes:
 ```ts
 import { Constant, createBindableEventSink } from "@lisachandra/constant";
 
-const constants = new Constant()
-	.add("WALK_SPEED", 16)
-	.add("DEBUG_RAYCASTS", false);
+const constants = new Constant().add("WALK_SPEED", 16).add("DEBUG_RAYCASTS", false);
 
 constants.mountEditor({
 	title: "Server Constants",
@@ -149,10 +147,7 @@ import {
 Plugin helpers:
 
 ```ts
-import {
-	connectPluginTransport,
-	getOrCreatePluginTransportEvent,
-} from "@lisachandra/plugin";
+import { connectPluginTransport, getOrCreatePluginTransportEvent } from "@lisachandra/plugin";
 ```
 
 ## Remote replication
